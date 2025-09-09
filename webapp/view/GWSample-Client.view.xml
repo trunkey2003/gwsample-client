@@ -1,7 +1,48 @@
 <mvc:View controllerName="ns.gwsampleclient.controller.GWSample-Client"
     xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
     xmlns="sap.m">
-    <Page id="page" title="{i18n>title}">
-        <content />
+    <Page id="page" title="Sales Orders">
+        <content>
+            <Table id="salesOrderTable" 
+                   items="{/SalesOrderSet}"
+                   class="sapUiResponsiveMargin">
+                
+                <headerToolbar>
+                    <Toolbar>
+                        <Title text="Sales Orders" level="H2"/>
+                    </Toolbar>
+                </headerToolbar>
+
+                <columns>
+                    <Column>
+                        <Text text="Order ID"/>
+                    </Column>
+                    <Column>
+                        <Text text="Customer Name"/>
+                    </Column>
+                    <Column>
+                        <Text text="Amount"/>
+                    </Column>
+                    <Column>
+                        <Text text="Currency"/>
+                    </Column>
+                    <Column>
+                        <Text text="Status"/>
+                    </Column>
+                </columns>
+
+                <items>
+                    <ColumnListItem>
+                        <cells>
+                            <Text text="{SalesOrderID}"/>
+                            <Text text="{CustomerName}"/>
+                            <Text text="{GrossAmount}"/>
+                            <Text text="{CurrencyCode}"/>
+                            <Text text="{LifecycleStatusDescription}"/>
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
     </Page>
 </mvc:View>
