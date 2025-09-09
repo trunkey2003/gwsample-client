@@ -5,12 +5,23 @@ sap.ui.define([
 
     return Controller.extend("ns.gwsampleclient.controller.GWSample-Client", {
         onInit: function () {
-            // Initialize the view
+
+            this.oRouter = this.getOwnerComponent().getRouter();
         },
 
         onNavigateToSalesOrders: function () {
             var oRouter = this.getOwnerComponent().getRouter();
             oRouter.navTo("SalesOrderList");
+        },
+
+        onSalesOrderPress: function(oEvent) {
+
+            var oBindingContext = oEvent.getSource().getBindingContext();
+            var sSalesOrderId = oBindingContext.getProperty("SalesOrderID");
+
+            this.oRouter.navTo("SalesOrderDetail", {
+                salesOrderId: sSalesOrderId
+            });
         }
     });
 });

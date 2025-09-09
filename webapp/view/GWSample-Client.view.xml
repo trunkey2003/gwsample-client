@@ -5,7 +5,8 @@
         <content>
             <Table id="salesOrderTable" 
                    items="{/SalesOrderSet}"
-                   class="sapUiResponsiveMargin">
+                   class="sapUiResponsiveMargin"
+                   mode="SingleSelect">
                 
                 <headerToolbar>
                     <Toolbar>
@@ -32,7 +33,7 @@
                 </columns>
 
                 <items>
-                    <ColumnListItem>
+                    <ColumnListItem press="onSalesOrderPress" type="Navigation">
                         <cells>
                             <Text text="{SalesOrderID}"/>
                             <Text text="{CustomerName}"/>

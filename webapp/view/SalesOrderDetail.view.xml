@@ -1,0 +1,109 @@
+<mvc:View controllerName="ns.gwsampleclient.controller.SalesOrderDetail"
+    xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
+    xmlns="sap.m"
+    xmlns:f="sap.f">
+    <Page id="detailPage" title="Sales Order Details" showNavButton="true" navButtonPress="onNavBack">
+        <content>
+            <ObjectHeader id="objectHeader"
+                         title="{SalesOrderID}"
+                         number="{GrossAmount}"
+                         numberUnit="{CurrencyCode}"
+                         backgroundDesign="Solid">
+                <attributes>
+                    <ObjectAttribute title="Customer" text="{CustomerName}"/>
+                    <ObjectAttribute title="Status" text="{LifecycleStatusDescription}"/>
+                    <ObjectAttribute title="Net Amount" text="{NetAmount} {CurrencyCode}"/>
+                    <ObjectAttribute title="Tax Amount" text="{TaxAmount} {CurrencyCode}"/>
+                </attributes>
+                <statuses>
+                    <ObjectStatus title="Billing Status" text="{BillingStatusDescription}"/>
+                    <ObjectStatus title="Delivery Status" text="{DeliveryStatusDescription}"/>
+                </statuses>
+            </ObjectHeader>
+
+            <IconTabBar id="iconTabBar" class="sapUiResponsiveContentPadding">
+                <items>
+                    <IconTabFilter text="General Information" key="general">
+                        <content>
+                            <form:SimpleForm id="generalForm"
+                                           editable="false"
+                                           layout="ResponsiveGridLayout"
+                                           xmlns:form="sap.ui.layout.form">
+                                <form:content>
+                                    <Label text="Sales Order ID:"/>
+                                    <Text text="{SalesOrderID}"/>
+                                    
+                                    <Label text="Customer ID:"/>
+                                    <Text text="{CustomerID}"/>
+                                    
+                                    <Label text="Customer Name:"/>
+                                    <Text text="{CustomerName}"/>
+                                    
+                                    <Label text="Currency:"/>
+                                    <Text text="{CurrencyCode}"/>
+                                    
+                                    <Label text="Created At:"/>
+                                    <Text text="{path: 'CreatedAt', type: 'sap.ui.model.odata.type.DateTime'}"/>
+                                    
+                                    <Label text="Changed At:"/>
+                                    <Text text="{path: 'ChangedAt', type: 'sap.ui.model.odata.type.DateTime'}"/>
+                                    
+                                    <Label text="Notes:"/>
+                                    <Text text="{Note}"/>
+                                </form:content>
+                            </form:SimpleForm>
+                        </content>
+                    </IconTabFilter>
+                    
+                    <IconTabFilter text="Line Items" key="lineItems">
+                        <content>
+                            <Table id="lineItemsTable"
+                                   items="{ToLineItems}"
+                                   class="sapUiResponsiveMargin">
+                                <headerToolbar>
+                                    <Toolbar>
+                                        <Title text="Line Items" level="H3"/>
+                                    </Toolbar>
+                                </headerToolbar>
+                                
+                                <columns>
+                                    <Column>
+                                        <Text text="Position"/>
+                                    </Column>
+                                    <Column>
+                                        <Text text="Product ID"/>
+                                    </Column>
+                                    <Column>
+                                        <Text text="Quantity"/>
+                                    </Column>
+                                    <Column>
+                                        <Text text="Unit"/>
+                                    </Column>
+                                    <Column>
+                                        <Text text="Net Amount"/>
+                                    </Column>
+                                    <Column>
+                                        <Text text="Delivery Date"/>
+                                    </Column>
+                                </columns>
+                                
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{ItemPosition}"/>
+                                            <Text text="{ProductID}"/>
+                                            <Text text="{Quantity}"/>
+                                            <Text text="{QuantityUnit}"/>
+                                            <Text text="{NetAmount} {CurrencyCode}"/>
+                                            <Text text="{path: 'DeliveryDate', type: 'sap.ui.model.odata.type.DateTime'}"/>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </content>
+                    </IconTabFilter>
+                </items>
+            </IconTabBar>
+        </content>
+    </Page>
+</mvc:View>
