@@ -1,34 +1,96 @@
 <mvc:View controllerName="ns.gwsampleclient.controller.GWSample-Client"
     xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
-    xmlns="sap.m">
+    xmlns="sap.m"
+    xmlns:form="sap.ui.layout.form">
     <Page id="page" title="Sales Orders">
         <content>
+            <Panel id="searchPanel" 
+                   headerText="Search Criteria" 
+                   expandable="true" 
+                   expanded="true"
+                   class="sapUiResponsiveMargin">
+                <content>
+                    <VBox class="sapUiMediumMargin">
+                        <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                            <Label text="Sales Order:" width="120px"/>
+                            <Input id="salesOrderInput" 
+                                   value="{searchModel>/searchCriteria/salesOrderId}"
+                                   showValueHelp="true"
+                                   valueHelpRequest="onSalesOrderValueHelp"
+                                   placeholder="Enter Sales Order ID"
+                                   width="200px"/>
+                        </HBox>
+
+                        <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                            <Label text="Customer:" width="120px"/>
+                            <Input id="customerInput" 
+                                   value="{searchModel>/searchCriteria/customerName}"
+                                   showValueHelp="true"
+                                   valueHelpRequest="onCustomerValueHelp"
+                                   placeholder="Enter Customer Name"
+                                   width="200px"/>
+                        </HBox>
+
+                        <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                            <Label text="Product:" width="120px"/>
+                            <Input id="productInput" 
+                                   value="{searchModel>/searchCriteria/productName}"
+                                   showValueHelp="true"
+                                   valueHelpRequest="onProductValueHelp"
+                                   placeholder="Enter Product Name"
+                                   width="200px"/>
+                        </HBox>
+
+                        <HBox class="sapUiMediumMarginTop">
+                            <Button id="searchButton" 
+                                    text="Search" 
+                                    type="Emphasized"
+                                    press="onSearch"
+                                    icon="sap-icon://search"
+                                    class="sapUiSmallMarginEnd"/>
+                            <Button id="clearButton" 
+                                    text="Clear" 
+                                    press="onClearSearch"
+                                    icon="sap-icon://clear-filter"/>
+                        </HBox>
+                    </VBox>
+                </content>
+            </Panel>
+
             <Table id="salesOrderTable" 
                    items="{/SalesOrderSet}"
                    class="sapUiResponsiveMargin"
                    mode="SingleSelect">
-                
+
                 <headerToolbar>
                     <Toolbar>
                         <Title text="Sales Orders" level="H2"/>
+                        <ToolbarSpacer/>
+                        <Text id="recordCountText" text=""/>
                     </Toolbar>
                 </headerToolbar>
 
                 <columns>
                     <Column>
-                        <Text text="Order ID"/>
+                        <Text text="Sales Order No"/>
                     </Column>
                     <Column>
-                        <Text text="Customer Name"/>
+                        <Text text="Customer ID - Customer Name"/>
                     </Column>
                     <Column>
-                        <Text text="Amount"/>
+                        <Text text="Gross Amount"/>
                     </Column>
                     <Column>
-                        <Text text="Currency"/>
+                        <Text text="Net Amount"/>
                     </Column>
                     <Column>
-                        <Text text="Status"/>
+                        <Text text="Tax Amount"/>
+                    </Column>
+                    <Column>
+                        <Text text="Billing Status"/>
+                    </Column>
+                    <Column>
+                        <Text text="Delivery Status"/>
                     </Column>
                 </columns>
 
@@ -36,10 +98,12 @@
                     <ColumnListItem press="onSalesOrderPress" type="Navigation">
                         <cells>
                             <Text text="{SalesOrderID}"/>
-                            <Text text="{CustomerName}"/>
-                            <Text text="{GrossAmount}"/>
-                            <Text text="{CurrencyCode}"/>
-                            <Text text="{LifecycleStatusDescription}"/>
+                            <Text text="{CustomerID} - {CustomerName}"/>
+                            <Text text="{GrossAmount} {CurrencyCode}"/>
+                            <Text text="{NetAmount} {CurrencyCode}"/>
+                            <Text text="{TaxAmount} {CurrencyCode}"/>
+                            <Text text="{BillingStatusDescription}"/>
+                            <Text text="{DeliveryStatusDescription}"/>
                         </cells>
                     </ColumnListItem>
                 </items>
@@ -56,4 +120,39 @@
             </Toolbar>
         </footer>
     </Page>
+    <SelectDialog id="salesOrderDialog"
+                  title="Select Sales Order"
+                  search="onSalesOrderDialogSearch"
+                  confirm="onSalesOrderDialogConfirm"
+                  cancel="onSalesOrderDialogCancel"
+                  items="{/SalesOrderSet}">
+        <StandardListItem title="{SalesOrderID}"
+                         description="{CustomerName} - {GrossAmount} {CurrencyCode}"
+                         info="{LifecycleStatusDescription}"
+                         type="Active"/>
+    </SelectDialog>
+    <SelectDialog id="customerDialog"
+                  title="Select Customer"
+                  search="onCustomerDialogSearch"
+                  confirm="onCustomerDialogConfirm"
+                  cancel="onCustomerDialogCancel"
+                  items="{/BusinessPartnerSet}">
+        <StandardListItem title="{CompanyName}"
+                         description="{BusinessPartnerID}"
+                         info="{EmailAddress}"
+                         type="Active"/>
+    </SelectDialog>
+
+    <SelectDialog id="productDialog"
+                  title="Select Product"
+                  search="onProductDialogSearch"
+                  confirm="onProductDialogConfirm"
+                  cancel="onProductDialogCancel"
+                  items="{/ProductSet}">
+        <StandardListItem title="{Name}"
+                         description="{ProductID} - {Category}"
+                         info="{Price} {CurrencyCode}"
+                         type="Active"/>
+    </SelectDialog>
+
 </mvc:View>

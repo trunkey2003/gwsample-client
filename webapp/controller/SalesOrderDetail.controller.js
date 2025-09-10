@@ -25,7 +25,7 @@ sap.ui.define([
             oView.bindElement({
                 path: sObjectPath,
                 parameters: {
-                    expand: "ToLineItems"
+                    expand: "ToLineItems,ToLineItems/ToProduct"
                 },
                 events: {
                     change: this._onBindingChange.bind(this),
@@ -50,7 +50,6 @@ sap.ui.define([
         },
 
         onNavBack: function () {
-
             this.oRouter.navTo("RouteGWSample-Client");
         },
 

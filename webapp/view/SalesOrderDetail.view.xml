@@ -58,7 +58,7 @@
                     <IconTabFilter text="Line Items" key="lineItems">
                         <content>
                             <Table id="lineItemsTable"
-                                   items="{ToLineItems}"
+                                   items="{path: 'ToLineItems', parameters: {expand: 'ToProduct'}}"
                                    class="sapUiResponsiveMargin">
                                 <headerToolbar>
                                     <Toolbar>
@@ -72,6 +72,9 @@
                                     </Column>
                                     <Column>
                                         <Text text="Product ID"/>
+                                    </Column>
+                                    <Column>
+                                        <Text text="Product Name"/>
                                     </Column>
                                     <Column>
                                         <Text text="Quantity"/>
@@ -92,6 +95,7 @@
                                         <cells>
                                             <Text text="{ItemPosition}"/>
                                             <Text text="{ProductID}"/>
+                                            <Text text="{ToProduct/Name}"/>
                                             <Text text="{Quantity}"/>
                                             <Text text="{QuantityUnit}"/>
                                             <Text text="{NetAmount} {CurrencyCode}"/>
