@@ -30,25 +30,25 @@
                                            layout="ResponsiveGridLayout"
                                            xmlns:form="sap.ui.layout.form">
                                 <form:content>
-                                    <Label text="Sales Order ID:"/>
+                                    <Label text="Sales Order ID"/>
                                     <Text text="{SalesOrderID}"/>
                                     
-                                    <Label text="Customer ID:"/>
+                                    <Label text="Customer ID"/>
                                     <Text text="{CustomerID}"/>
                                     
-                                    <Label text="Customer Name:"/>
+                                    <Label text="Customer Name"/>
                                     <Text text="{CustomerName}"/>
                                     
-                                    <Label text="Currency:"/>
+                                    <Label text="Currency"/>
                                     <Text text="{CurrencyCode}"/>
                                     
-                                    <Label text="Created At:"/>
+                                    <Label text="Created At"/>
                                     <Text text="{path: 'CreatedAt', type: 'sap.ui.model.odata.type.DateTime'}"/>
                                     
-                                    <Label text="Changed At:"/>
+                                    <Label text="Changed At"/>
                                     <Text text="{path: 'ChangedAt', type: 'sap.ui.model.odata.type.DateTime'}"/>
                                     
-                                    <Label text="Notes:"/>
+                                    <Label text="Notes"/>
                                     <Text text="{Note}"/>
                                 </form:content>
                             </form:SimpleForm>

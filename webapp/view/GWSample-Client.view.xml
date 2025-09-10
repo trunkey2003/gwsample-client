@@ -45,5 +45,15 @@
                 </items>
             </Table>
         </content>
+        <footer>
+            <Toolbar>
+                <ToolbarSpacer/>
+                <Button id="regenerateButton" 
+                        text="Regenerate All Data" 
+                        type="Emphasized" 
+                        press="onRegenerateData"
+                        icon="sap-icon://refresh"/>
+            </Toolbar>
+        </footer>
     </Page>
 </mvc:View>
