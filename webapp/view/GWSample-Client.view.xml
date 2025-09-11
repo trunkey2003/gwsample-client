@@ -2,100 +2,104 @@
     xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
     xmlns="sap.m"
     xmlns:form="sap.ui.layout.form">
-    <Page id="page" title="Sales Orders">
+    <Page id="page" title="Sales Orders Management">
         <content>
             <Panel id="searchPanel" 
-                   headerText="Search Criteria" 
+                   headerText="Filter Options" 
                    expandable="true" 
                    expanded="true"
                    class="sapUiResponsiveMargin">
                 <content>
                     <VBox class="sapUiMediumMargin">
                         <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                            <Label text="Sales Order:" width="120px"/>
+                            <Label text="Order Number:" width="140px"/>
                             <Input id="salesOrderInput" 
                                    value="{searchModel>/searchCriteria/salesOrderId}"
                                    showValueHelp="true"
                                    valueHelpRequest="onSalesOrderValueHelp"
-                                   placeholder="Enter Sales Order ID"
-                                   width="200px"/>
+                                   placeholder="Search by Order ID"
+                                   width="220px"/>
                         </HBox>
 
                         <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                            <Label text="Customer:" width="120px"/>
+                            <Label text="Customer Info:" width="140px"/>
                             <Input id="customerInput" 
                                    value="{searchModel>/searchCriteria/customerName}"
                                    showValueHelp="true"
                                    valueHelpRequest="onCustomerValueHelp"
-                                   placeholder="Enter Customer Name"
-                                   width="200px"/>
+                                   placeholder="Search by Customer"
+                                   width="220px"/>
                         </HBox>
 
                         <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                            <Label text="Product:" width="120px"/>
+                            <Label text="Product Info:" width="140px"/>
                             <Input id="productInput" 
                                    value="{searchModel>/searchCriteria/productName}"
                                    showValueHelp="true"
                                    valueHelpRequest="onProductValueHelp"
-                                   placeholder="Enter Product Name"
-                                   width="200px"/>
+                                   placeholder="Search by Product"
+                                   width="220px"/>
                         </HBox>
 
                         <HBox class="sapUiMediumMarginTop">
-                            <Button id="searchButton" 
-                                    text="Search" 
+                            <Button id="filterButton" 
+                                    text="Apply Filter" 
                                     type="Emphasized"
                                     press="onSearch"
-                                    icon="sap-icon://search"
+                                    icon="sap-icon://filter"
                                     class="sapUiSmallMarginEnd"/>
-                            <Button id="clearButton" 
-                                    text="Clear" 
+                            <Button id="resetButton" 
+                                    text="Reset All" 
                                     press="onClearSearch"
-                                    icon="sap-icon://clear-filter"/>
+                                    icon="sap-icon://reset"/>
                         </HBox>
                     </VBox>
                 </content>
             </Panel>
 
-            <Table id="salesOrderTable" 
-                   items="{/SalesOrderSet}"
+            <Table id="mainSalesTable" 
+                   items="{
+						path: '/SalesOrderSet',
+                        sorter: {path: 'DeliveryStatus'},
+                        groupHeaderFactory: '.buildGroupHeader'  
+					}"
                    class="sapUiResponsiveMargin"
                    mode="SingleSelect">
 
                 <headerToolbar>
                     <Toolbar>
-                        <Title text="Sales Orders" level="H2"/>
+                        <Title text="Sales Order Overview" level="H2"/>
                         <ToolbarSpacer/>
-                        <Text id="recordCountText" text=""/>
+                        <Text id="totalRecordsText" text=""/>
                     </Toolbar>
                 </headerToolbar>
 
                 <columns>
                     <Column>
-                        <Text text="Sales Order No"/>
+                        <Text text="Order ID"/>
                     </Column>
                     <Column>
-                        <Text text="Customer ID - Customer Name"/>
+                        <Text text="Customer Information"/>
                     </Column>
                     <Column>
-                        <Text text="Gross Amount"/>
+                        <Text text="Total Amount"/>
                     </Column>
                     <Column>
-                        <Text text="Net Amount"/>
+                        <Text text="Net Value"/>
                     </Column>
                     <Column>
-                        <Text text="Tax Amount"/>
+                        <Text text="Tax Value"/>
                     </Column>
                     <Column>
-                        <Text text="Billing Status"/>
+                        <Text text="Invoice Status"/>
                     </Column>
                     <Column>
-                        <Text text="Delivery Status"/>
+                        <Text text="Shipment Status"/>
                     </Column>
                 </columns>
 
                 <items>
-                    <ColumnListItem press="onSalesOrderPress" type="Navigation">
+                    <ColumnListItem press="onOrderItemSelected" type="Navigation">
                         <cells>
                             <Text text="{SalesOrderID}"/>
                             <Text text="{CustomerID} - {CustomerName}"/>
@@ -112,29 +116,31 @@
         <footer>
             <Toolbar>
                 <ToolbarSpacer/>
-                <Button id="regenerateButton" 
-                        text="Regenerate All Data" 
+                <Button id="dataRefreshButton" 
+                        text="Refresh Data" 
                         type="Emphasized" 
                         press="onRegenerateData"
-                        icon="sap-icon://refresh"/>
+                        icon="sap-icon://synchronize"/>
             </Toolbar>
         </footer>
     </Page>
-    <SelectDialog id="salesOrderDialog"
-                  title="Select Sales Order"
-                  search="onSalesOrderDialogSearch"
-                  confirm="onSalesOrderDialogConfirm"
-                  cancel="onSalesOrderDialogCancel"
+    
+    <SelectDialog id="orderSelectionDialog"
+                  title="Choose Sales Order"
+                  search="onOrderDialogFilter"
+                  confirm="onOrderDialogAccept"
+                  cancel="onOrderDialogCancel"
                   items="{/SalesOrderSet}">
         <StandardListItem title="{SalesOrderID}"
                          description="{CustomerName} - {GrossAmount} {CurrencyCode}"
                          info="{LifecycleStatusDescription}"
                          type="Active"/>
     </SelectDialog>
-    <SelectDialog id="customerDialog"
-                  title="Select Customer"
-                  search="onCustomerDialogSearch"
-                  confirm="onCustomerDialogConfirm"
+    
+    <SelectDialog id="customerSelectionDialog"
+                  title="Choose Customer"
+                  search="onCustomerDialogFilter"
+                  confirm="onCustomerDialogAccept"
                   cancel="onCustomerDialogCancel"
                   items="{/BusinessPartnerSet}">
         <StandardListItem title="{CompanyName}"
@@ -143,10 +149,10 @@
                          type="Active"/>
     </SelectDialog>
 
-    <SelectDialog id="productDialog"
-                  title="Select Product"
-                  search="onProductDialogSearch"
-                  confirm="onProductDialogConfirm"
+    <SelectDialog id="productSelectionDialog"
+                  title="Choose Product"
+                  search="onProductDialogFilter"
+                  confirm="onProductDialogAccept"
                   cancel="onProductDialogCancel"
                   items="{/ProductSet}">
         <StandardListItem title="{Name}"

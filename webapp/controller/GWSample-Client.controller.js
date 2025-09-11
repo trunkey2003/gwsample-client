@@ -4,18 +4,21 @@ sap.ui.define([
     "sap/m/MessageBox",
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator"
-], function (Controller, MessageToast, MessageBox, JSONModel, Filter, FilterOperator) {
+    "sap/ui/model/FilterOperator",
+    "sap/m/GroupHeaderListItem"
+], function (Controller, MessageToast, MessageBox, JSONModel, Filter, FilterOperator, GroupHeaderListItem) {
     "use strict";
 
     return Controller.extend("ns.gwsampleclient.controller.GWSample-Client", {
+        
         onInit: function () {
-            console.log("Controller initialized");
+            console.log("Initializing Sales Order Controller");
 
             this.oRouter = this.getOwnerComponent().getRouter();
+            this.mainTable = this.getView().byId("mainSalesTable");
 
-            // Create search model
-            var oSearchData = {
+            
+            var filterData = {
                 searchCriteria: {
                     salesOrderId: "",
                     customerName: "",
@@ -25,194 +28,253 @@ sap.ui.define([
                 }
             };
 
-            this.oSearchModel = new JSONModel(oSearchData);
-            this.getView().setModel(this.oSearchModel, "searchModel");
+            this.filterModel = new JSONModel(filterData);
+            this.getView().setModel(this.filterModel, "searchModel");
 
-            console.log("Search model created and set");
+            this.currentGroupField = "DeliveryStatus";
+            
+            
+            this.mainTable.attachEventOnce("updateFinished", this.setupInitialGrouping.bind(this));
+
+            console.log("Controller initialization complete");
         },
 
-        // ============= SEARCH FUNCTIONALITY =============
+        setupInitialGrouping: function () {
+            var deliveryGroupSorter = new sap.ui.model.Sorter(
+                "DeliveryStatus",
+                false,
+                true
+            );
+            this.mainTable.getBinding("items").sort([deliveryGroupSorter]);
+            this.currentGroupField = "DeliveryStatus";
+        },
+
+        buildGroupHeader: function (groupInfo) {
+            var groupKey = groupInfo.key;
+            var fieldName = this.currentGroupField;
+            var displayText = groupKey;
+            var itemCount = 0;
+
+            
+            var tableBinding = this.mainTable.getBinding("items");
+            var dataContexts = tableBinding.getContexts();
+
+            
+            for (var i = 0; i < dataContexts.length; i++) {
+                var itemData = dataContexts[i].getObject();
+
+                if (itemData[fieldName] === groupKey) {
+                    itemCount++;
+
+                    
+                    if (displayText === groupKey) {
+                        switch (fieldName) {
+                            case "DeliveryStatus":
+                                displayText = itemData.DeliveryStatusDescription;
+                                break;
+                            case "BillingStatus":
+                                displayText = itemData.BillingStatusDescription;
+                                break;
+                            default:
+                                displayText = groupKey;
+                        }
+                    }
+                }
+            }
+
+            return new GroupHeaderListItem({
+                title: displayText + " (" + itemCount + " orders)",
+                upperCase: false
+            });
+        },
+
+        
 
         onSearch: function () {
-            console.log("=== SEARCH BUTTON CLICKED ===");
+            console.log("=== APPLYING FILTERS ===");
 
             try {
-                var oTable = this.byId("salesOrderTable");
-                if (!oTable) {
-                    MessageBox.error("Table not found!");
+                var mainTable = this.byId("mainSalesTable");
+                if (!mainTable) {
+                    MessageBox.error("Main table not accessible!");
                     return;
                 }
 
-                // Get search criteria
-                var oSearchCriteria = this.oSearchModel.getProperty("/searchCriteria");
-                console.log("Search criteria:", JSON.stringify(oSearchCriteria));
+                var filterCriteria = this.filterModel.getProperty("/searchCriteria");
+                console.log("Filter criteria:", JSON.stringify(filterCriteria));
 
-                // Check if ONLY product filter is specified (this is the problematic case)
-                var bHasProductFilter = (oSearchCriteria.productId && oSearchCriteria.productId.trim()) ||
-                    (oSearchCriteria.productName && oSearchCriteria.productName.trim());
-                var bHasOtherFilters = (oSearchCriteria.salesOrderId && oSearchCriteria.salesOrderId.trim()) ||
-                    (oSearchCriteria.customerId && oSearchCriteria.customerId.trim()) ||
-                    (oSearchCriteria.customerName && oSearchCriteria.customerName.trim());
+                
+                var needsProductFilter = (filterCriteria.productId && filterCriteria.productId.trim()) ||
+                    (filterCriteria.productName && filterCriteria.productName.trim());
 
-                if (bHasProductFilter) {
-                    console.log("Product filter detected - using complex search");
-                    this._searchWithProductFilter(oSearchCriteria);
+                if (needsProductFilter) {
+                    console.log("Product-based filter detected - using expanded search");
+                    this.executeProductBasedFilter(filterCriteria);
                     return;
                 }
 
-                // Simple search using standard OData filtering (this always worked)
-                var oBinding = oTable.getBinding("items");
-                if (!oBinding) {
-                    MessageBox.error("Table binding not found!");
+                
+                var tableBinding = mainTable.getBinding("items");
+                if (!tableBinding) {
+                    MessageBox.error("Table binding not available!");
                     return;
                 }
 
-                var aFilters = [];
+                var appliedFilters = this.buildStandardFilters(filterCriteria);
 
-                // Sales Order ID filter
-                if (oSearchCriteria.salesOrderId && oSearchCriteria.salesOrderId.trim()) {
-                    aFilters.push(new Filter("SalesOrderID", FilterOperator.EQ, oSearchCriteria.salesOrderId.trim()));
-                    console.log("Added filter for SalesOrderID");
-                }
+                console.log("Applying", appliedFilters.length, "standard filters");
+                tableBinding.filter(appliedFilters);
 
-                // Customer filter
-                if (oSearchCriteria.customerId && oSearchCriteria.customerId.trim()) {
-                    aFilters.push(new Filter("CustomerID", FilterOperator.EQ, oSearchCriteria.customerId.trim()));
-                    console.log("Added filter for CustomerID");
-                } else if (oSearchCriteria.customerName && oSearchCriteria.customerName.trim()) {
-                    aFilters.push(new Filter("CustomerName", FilterOperator.Contains, oSearchCriteria.customerName.trim()));
-                    console.log("Added filter for CustomerName");
-                }
-
-                console.log("Applying", aFilters.length, "standard filters");
-                oBinding.filter(aFilters);
-
-                MessageToast.show("Search applied with " + aFilters.length + " filter(s)");
-                setTimeout(this._updateRecordCount.bind(this), 1000);
+                MessageToast.show("Filters applied: " + appliedFilters.length);
+                setTimeout(this.refreshRecordCount.bind(this), 1000);
 
             } catch (error) {
-                console.error("Error in search:", error);
-                MessageBox.error("Error: " + error.message);
+                console.error("Error applying filters:", error);
+                MessageBox.error("Filter Error: " + error.message);
             }
         },
 
-        _searchWithProductFilter: function (oSearchCriteria) {
-            console.log("=== COMPLEX SEARCH WITH PRODUCT FILTER ===");
+        buildStandardFilters: function (criteria) {
+            var filters = [];
 
-            var oModel = this.getView().getModel();
-            var oTable = this.byId("salesOrderTable");
-            var that = this;
+            
+            if (criteria.salesOrderId && criteria.salesOrderId.trim()) {
+                filters.push(new Filter("SalesOrderID", FilterOperator.EQ, criteria.salesOrderId.trim()));
+                console.log("Added Sales Order ID filter");
+            }
 
-            oTable.setBusy(true);
+            
+            if (criteria.customerId && criteria.customerId.trim()) {
+                filters.push(new Filter("CustomerID", FilterOperator.EQ, criteria.customerId.trim()));
+                console.log("Added Customer ID filter");
+            } else if (criteria.customerName && criteria.customerName.trim()) {
+                filters.push(new Filter("CustomerName", FilterOperator.Contains, criteria.customerName.trim()));
+                console.log("Added Customer Name filter");
+            }
 
-            // Read sales orders with expanded line items
-            oModel.read("/SalesOrderSet", {
+            return filters;
+        },
+
+        executeProductBasedFilter: function (criteria) {
+            console.log("=== PRODUCT-BASED FILTERING ===");
+
+            var dataModel = this.getView().getModel();
+            var mainTable = this.byId("mainSalesTable");
+            var controller = this;
+
+            mainTable.setBusy(true);
+
+            
+            dataModel.read("/SalesOrderSet", {
                 urlParameters: ["$expand=ToLineItems"],
-                success: function (oData) {
-                    console.log("Total sales orders loaded:", oData.results.length);
+                success: function (responseData) {
+                    console.log("Loaded sales orders:", responseData.results.length);
 
-                    var aFilteredSalesOrders = [];
+                    var matchingOrders = controller.filterOrdersByProduct(responseData.results, criteria);
+                    console.log("Orders matching criteria:", matchingOrders.length);
 
-                    oData.results.forEach(function (oSalesOrder) {
-                        var bInclude = true;
+                    controller.applyFilteredResults(matchingOrders);
 
-                        // Apply Sales Order ID filter
-                        if (oSearchCriteria.salesOrderId && oSearchCriteria.salesOrderId.trim()) {
-                            if (oSalesOrder.SalesOrderID !== oSearchCriteria.salesOrderId.trim()) {
-                                bInclude = false;
-                            }
-                        }
+                    mainTable.setBusy(false);
 
-                        // Apply Customer filter
-                        if (bInclude && oSearchCriteria.customerId && oSearchCriteria.customerId.trim()) {
-                            if (oSalesOrder.CustomerID !== oSearchCriteria.customerId.trim()) {
-                                bInclude = false;
-                            }
-                        } else if (bInclude && oSearchCriteria.customerName && oSearchCriteria.customerName.trim()) {
-                            var sCustomerName = oSalesOrder.CustomerName || "";
-                            if (sCustomerName.toLowerCase().indexOf(oSearchCriteria.customerName.trim().toLowerCase()) === -1) {
-                                bInclude = false;
-                            }
-                        }
-
-                        // Apply Product filter
-                        if (bInclude && oSearchCriteria.productId && oSearchCriteria.productId.trim()) {
-                            var bProductFound = false;
-
-                            if (oSalesOrder.ToLineItems && oSalesOrder.ToLineItems.results) {
-                                oSalesOrder.ToLineItems.results.forEach(function (oLineItem) {
-                                    if (oLineItem.ProductID === oSearchCriteria.productId.trim()) {
-                                        bProductFound = true;
-                                    }
-                                });
-                            }
-
-                            if (!bProductFound) {
-                                bInclude = false;
-                            }
-                        }
-
-                        if (bInclude) {
-                            aFilteredSalesOrders.push(oSalesOrder);
-                        }
-                    });
-
-                    console.log("Filtered results:", aFilteredSalesOrders.length);
-
-                    // Use a simple approach: Apply the filtered IDs as a filter to the original table
-                    that._applyProductFilterResults(aFilteredSalesOrders);
-
-                    oTable.setBusy(false);
-
-                    var iFilterCount = that._countActiveFilters(oSearchCriteria);
-                    MessageToast.show("Search completed with " + iFilterCount + " filter(s). Found " + aFilteredSalesOrders.length + " records.");
+                    var activeFilterCount = controller.countActiveFilters(criteria);
+                    MessageToast.show("Product filter completed. Found " + matchingOrders.length + " orders with " + activeFilterCount + " criteria.");
                 },
-                error: function (oError) {
-                    oTable.setBusy(false);
-                    console.error("Error in complex search:", oError);
-                    MessageBox.error("Error during search: " + (oError.message || "Unknown error"));
+                error: function (error) {
+                    mainTable.setBusy(false);
+                    console.error("Error in product filtering:", error);
+                    MessageBox.error("Product filter failed: " + (error.message || "Unknown error"));
                 }
             });
         },
 
-        _applyProductFilterResults: function (aFilteredSalesOrders) {
-            var oTable = this.byId("salesOrderTable");
-            var oBinding = oTable.getBinding("items");
+        filterOrdersByProduct: function (salesOrders, criteria) {
+            var filteredResults = [];
 
-            if (aFilteredSalesOrders.length === 0) {
-                // No results - filter everything out
-                oBinding.filter([new Filter("SalesOrderID", FilterOperator.EQ, "IMPOSSIBLE_ID")]);
-            } else {
-                // Create OR filter for all found Sales Order IDs
-                var aIDFilters = [];
-                aFilteredSalesOrders.forEach(function (oOrder) {
-                    aIDFilters.push(new Filter("SalesOrderID", FilterOperator.EQ, oOrder.SalesOrderID));
-                });
+            salesOrders.forEach(function (order) {
+                var shouldInclude = true;
 
-                // Apply as OR filter
-                var oMainFilter = new Filter(aIDFilters, false); // false = OR
-                oBinding.filter([oMainFilter]);
-            }
+                
+                if (criteria.salesOrderId && criteria.salesOrderId.trim()) {
+                    if (order.SalesOrderID !== criteria.salesOrderId.trim()) {
+                        shouldInclude = false;
+                    }
+                }
 
-            console.log("Applied product filter results to original table");
-            this._updateRecordCount();
+                
+                if (shouldInclude && criteria.customerId && criteria.customerId.trim()) {
+                    if (order.CustomerID !== criteria.customerId.trim()) {
+                        shouldInclude = false;
+                    }
+                } else if (shouldInclude && criteria.customerName && criteria.customerName.trim()) {
+                    var customerName = order.CustomerName || "";
+                    if (customerName.toLowerCase().indexOf(criteria.customerName.trim().toLowerCase()) === -1) {
+                        shouldInclude = false;
+                    }
+                }
+
+                
+                if (shouldInclude && criteria.productId && criteria.productId.trim()) {
+                    var hasMatchingProduct = false;
+
+                    if (order.ToLineItems && order.ToLineItems.results) {
+                        order.ToLineItems.results.forEach(function (lineItem) {
+                            if (lineItem.ProductID === criteria.productId.trim()) {
+                                hasMatchingProduct = true;
+                            }
+                        });
+                    }
+
+                    if (!hasMatchingProduct) {
+                        shouldInclude = false;
+                    }
+                }
+
+                if (shouldInclude) {
+                    filteredResults.push(order);
+                }
+            });
+
+            return filteredResults;
         },
 
-        _countActiveFilters: function (oSearchCriteria) {
-            var iCount = 0;
-            if (oSearchCriteria.salesOrderId && oSearchCriteria.salesOrderId.trim()) iCount++;
-            if (oSearchCriteria.customerId && oSearchCriteria.customerId.trim()) iCount++;
-            else if (oSearchCriteria.customerName && oSearchCriteria.customerName.trim()) iCount++;
-            if (oSearchCriteria.productId && oSearchCriteria.productId.trim()) iCount++;
-            return iCount;
+        applyFilteredResults: function (matchingOrders) {
+            var mainTable = this.byId("mainSalesTable");
+            var tableBinding = mainTable.getBinding("items");
+
+            if (matchingOrders.length === 0) {
+                
+                tableBinding.filter([new Filter("SalesOrderID", FilterOperator.EQ, "NO_MATCH_FOUND")]);
+            } else {
+                
+                var orderIdFilters = [];
+                matchingOrders.forEach(function (order) {
+                    orderIdFilters.push(new Filter("SalesOrderID", FilterOperator.EQ, order.SalesOrderID));
+                });
+
+                var combinedFilter = new Filter(orderIdFilters, false); 
+                tableBinding.filter([combinedFilter]);
+            }
+
+            console.log("Applied product filter results");
+            this.refreshRecordCount();
+        },
+
+        countActiveFilters: function (criteria) {
+            var count = 0;
+            if (criteria.salesOrderId && criteria.salesOrderId.trim()) count++;
+            if (criteria.customerId && criteria.customerId.trim()) count++;
+            else if (criteria.customerName && criteria.customerName.trim()) count++;
+            if (criteria.productId && criteria.productId.trim()) count++;
+            return count;
         },
 
         onClearSearch: function () {
-            console.log("=== CLEAR BUTTON CLICKED ===");
+            console.log("=== CLEARING ALL FILTERS ===");
 
             try {
-                // Clear search model
-                this.oSearchModel.setProperty("/searchCriteria", {
+                
+                this.filterModel.setProperty("/searchCriteria", {
                     salesOrderId: "",
                     customerName: "",
                     productName: "",
@@ -220,233 +282,239 @@ sap.ui.define([
                     productId: ""
                 });
 
-                console.log("Search criteria cleared");
+                console.log("Filter criteria reset");
 
-                var oTable = this.byId("salesOrderTable");
-                if (oTable) {
-                    // Simply clear all filters - table stays with original binding
-                    var oBinding = oTable.getBinding("items");
-                    if (oBinding) {
-                        oBinding.filter([]);
-                        console.log("All filters cleared from original table binding");
+                
+                var mainTable = this.byId("mainSalesTable");
+                if (mainTable) {
+                    var tableBinding = mainTable.getBinding("items");
+                    if (tableBinding) {
+                        tableBinding.filter([]);
+                        console.log("Table filters cleared");
                     }
                 }
 
-                MessageToast.show("Search criteria cleared");
-                setTimeout(this._updateRecordCount.bind(this), 1000);
+                MessageToast.show("All filters cleared");
+                setTimeout(this.refreshRecordCount.bind(this), 1000);
 
             } catch (error) {
-                console.error("Error in clear:", error);
-                MessageBox.error("Error: " + error.message);
+                console.error("Error clearing filters:", error);
+                MessageBox.error("Clear Error: " + error.message);
             }
         },
 
-        _updateRecordCount: function (iCustomCount) {
-            var oTable = this.byId("salesOrderTable");
-            var oRecordCountText = this.byId("recordCountText");
+        refreshRecordCount: function (customCount) {
+            var recordText = this.byId("totalRecordsText");
 
-            if (oTable && oRecordCountText) {
-                if (iCustomCount !== undefined) {
-                    oRecordCountText.setText("Records: " + iCustomCount);
+            if (recordText) {
+                var count = 0;
+                
+                if (customCount !== undefined) {
+                    count = customCount;
                 } else {
-                    var oBinding = oTable.getBinding("items");
-                    if (oBinding) {
-                        var iLength = oBinding.getLength();
-                        oRecordCountText.setText("Records: " + (iLength || 0));
+                    var mainTable = this.byId("mainSalesTable");
+                    if (mainTable) {
+                        var tableBinding = mainTable.getBinding("items");
+                        if (tableBinding) {
+                            count = tableBinding.getLength() || 0;
+                        }
                     }
                 }
+
+                recordText.setText("Total Records: " + count);
             }
         },
 
-        // ============= KEEP ORIGINAL PRESS HANDLER (unchanged) =============
+        
 
-        onSalesOrderPress: function (oEvent) {
-            var oBindingContext = oEvent.getSource().getBindingContext();
-            var sSalesOrderId = oBindingContext.getProperty("SalesOrderID");
+        onOrderItemSelected: function (event) {
+            var bindingContext = event.getSource().getBindingContext();
+            var orderID = bindingContext.getProperty("SalesOrderID");
 
             this.oRouter.navTo("SalesOrderDetail", {
-                salesOrderId: sSalesOrderId
+                salesOrderId: orderID
             });
         },
 
-        // ============= VALUE HELP FUNCTIONS (unchanged) =============
+        
 
         onSalesOrderValueHelp: function () {
-            var oDialog = this.byId("salesOrderDialog");
-            if (oDialog) {
-                oDialog.open();
+            var dialog = this.byId("orderSelectionDialog");
+            if (dialog) {
+                dialog.open();
             } else {
-                MessageBox.error("Sales Order dialog not found.");
+                MessageBox.error("Order selection dialog not found.");
             }
         },
 
-        onSalesOrderDialogSearch: function (oEvent) {
-            var sValue = oEvent.getParameter("value");
-            var oBinding = oEvent.getSource().getBinding("items");
-            var aFilters = [];
+        onOrderDialogFilter: function (event) {
+            var searchValue = event.getParameter("value");
+            var dialogBinding = event.getSource().getBinding("items");
+            var filters = [];
 
-            if (sValue) {
-                aFilters.push(new Filter("SalesOrderID", FilterOperator.Contains, sValue));
+            if (searchValue) {
+                filters.push(new Filter("SalesOrderID", FilterOperator.Contains, searchValue));
             }
 
-            oBinding.filter(aFilters);
+            dialogBinding.filter(filters);
         },
 
-        onSalesOrderDialogConfirm: function (oEvent) {
-            var oSelectedItem = oEvent.getParameter("selectedItem");
-            if (oSelectedItem) {
-                var sOrderId = oSelectedItem.getTitle();
-                this.oSearchModel.setProperty("/searchCriteria/salesOrderId", sOrderId);
-                MessageToast.show("Selected: " + sOrderId);
+        onOrderDialogAccept: function (event) {
+            var selectedItem = event.getParameter("selectedItem");
+            if (selectedItem) {
+                var orderID = selectedItem.getTitle();
+                this.filterModel.setProperty("/searchCriteria/salesOrderId", orderID);
+                MessageToast.show("Selected Order: " + orderID);
             }
         },
 
-        onSalesOrderDialogCancel: function () {
+        onOrderDialogCancel: function () {
+            
         },
 
         onCustomerValueHelp: function () {
-            var oDialog = this.byId("customerDialog");
-            if (oDialog) {
-                oDialog.open();
+            var dialog = this.byId("customerSelectionDialog");
+            if (dialog) {
+                dialog.open();
             } else {
-                MessageBox.error("Customer dialog not found.");
+                MessageBox.error("Customer selection dialog not found.");
             }
         },
 
-        onCustomerDialogSearch: function (oEvent) {
-            var sValue = oEvent.getParameter("value");
-            var oBinding = oEvent.getSource().getBinding("items");
-            var aFilters = [];
+        onCustomerDialogFilter: function (event) {
+            var searchValue = event.getParameter("value");
+            var dialogBinding = event.getSource().getBinding("items");
+            var filters = [];
 
-            if (sValue) {
-                aFilters.push(new Filter("CompanyName", FilterOperator.Contains, sValue));
+            if (searchValue) {
+                filters.push(new Filter("CompanyName", FilterOperator.Contains, searchValue));
             }
 
-            oBinding.filter(aFilters);
+            dialogBinding.filter(filters);
         },
 
-        onCustomerDialogConfirm: function (oEvent) {
-            var oSelectedItem = oEvent.getParameter("selectedItem");
-            if (oSelectedItem) {
-                var sCustomerName = oSelectedItem.getTitle();
-                var sCustomerId = oSelectedItem.getDescription();
-                this.oSearchModel.setProperty("/searchCriteria/customerName", sCustomerName);
-                this.oSearchModel.setProperty("/searchCriteria/customerId", sCustomerId);
-                MessageToast.show("Selected: " + sCustomerName);
+        onCustomerDialogAccept: function (event) {
+            var selectedItem = event.getParameter("selectedItem");
+            if (selectedItem) {
+                var customerName = selectedItem.getTitle();
+                var customerID = selectedItem.getDescription();
+                this.filterModel.setProperty("/searchCriteria/customerName", customerName);
+                this.filterModel.setProperty("/searchCriteria/customerId", customerID);
+                MessageToast.show("Selected Customer: " + customerName);
             }
         },
 
         onCustomerDialogCancel: function () {
-            // Dialog closes automatically
+            
         },
 
         onProductValueHelp: function () {
-            var oDialog = this.byId("productDialog");
-            if (oDialog) {
-                oDialog.open();
+            var dialog = this.byId("productSelectionDialog");
+            if (dialog) {
+                dialog.open();
             } else {
-                MessageBox.error("Product dialog not found.");
+                MessageBox.error("Product selection dialog not found.");
             }
         },
 
-        onProductDialogSearch: function (oEvent) {
-            var sValue = oEvent.getParameter("value");
-            var oBinding = oEvent.getSource().getBinding("items");
-            var aFilters = [];
+        onProductDialogFilter: function (event) {
+            var searchValue = event.getParameter("value");
+            var dialogBinding = event.getSource().getBinding("items");
+            var filters = [];
 
-            if (sValue) {
-                var oFilter1 = new Filter("Name", FilterOperator.Contains, sValue);
-                var oFilter2 = new Filter("ProductID", FilterOperator.Contains, sValue);
-                aFilters.push(new Filter([oFilter1, oFilter2], false));
+            if (searchValue) {
+                var nameFilter = new Filter("Name", FilterOperator.Contains, searchValue);
+                var idFilter = new Filter("ProductID", FilterOperator.Contains, searchValue);
+                filters.push(new Filter([nameFilter, idFilter], false));
             }
 
-            oBinding.filter(aFilters);
+            dialogBinding.filter(filters);
         },
 
-        onProductDialogConfirm: function (oEvent) {
-            var oSelectedItem = oEvent.getParameter("selectedItem");
-            if (oSelectedItem) {
-                var sProductName = oSelectedItem.getTitle();
-                var sDescription = oSelectedItem.getDescription();
-                var sProductId = sDescription ? sDescription.split(" - ")[0] : "";
+        onProductDialogAccept: function (event) {
+            var selectedItem = event.getParameter("selectedItem");
+            if (selectedItem) {
+                var productName = selectedItem.getTitle();
+                var description = selectedItem.getDescription();
+                var productID = description ? description.split(" - ")[0] : "";
 
-                this.oSearchModel.setProperty("/searchCriteria/productName", sProductName);
-                this.oSearchModel.setProperty("/searchCriteria/productId", sProductId);
-                MessageToast.show("Selected: " + sProductName);
+                this.filterModel.setProperty("/searchCriteria/productName", productName);
+                this.filterModel.setProperty("/searchCriteria/productId", productID);
+                MessageToast.show("Selected Product: " + productName);
             }
         },
 
         onProductDialogCancel: function () {
-            // Dialog closes automatically
+            
         },
 
-        // ============= EXISTING FUNCTIONS (unchanged) =============
+        
 
         onRegenerateData: function () {
-            var that = this;
+            var controller = this;
 
             MessageBox.confirm(
-                "This will regenerate all data in the system. Are you sure you want to continue?",
+                "This action will regenerate all system data. Do you want to proceed?",
                 {
-                    title: "Regenerate All Data",
-                    onClose: function (oAction) {
-                        if (oAction === MessageBox.Action.OK) {
-                            that._callRegenerateFunction();
+                    title: "Data Regeneration",
+                    onClose: function (action) {
+                        if (action === MessageBox.Action.OK) {
+                            controller.executeDataRegeneration();
                         }
                     }
                 }
             );
         },
 
-        _callRegenerateFunction: function () {
-            var oModel = this.getView().getModel();
-            var that = this;
+        executeDataRegeneration: function () {
+            var dataModel = this.getView().getModel();
+            var controller = this;
 
             this.getView().setBusy(true);
 
-            oModel.callFunction("/RegenerateAllData", {
+            dataModel.callFunction("/RegenerateAllData", {
                 method: "POST",
                 urlParameters: {
                     NoOfSalesOrders: 50
                 },
-                success: function (oData, response) {
-                    that.getView().setBusy(false);
+                success: function (data, response) {
+                    controller.getView().setBusy(false);
 
-                    var sMessage = oData && oData.String ? oData.String : "Data regenerated successfully!";
-                    MessageToast.show(sMessage);
+                    var message = data && data.String ? data.String : "Data regeneration completed successfully!";
+                    MessageToast.show(message);
 
-                    that._refreshTableData();
+                    controller.refreshAllData();
                 },
-                error: function (oError) {
-                    that.getView().setBusy(false);
+                error: function (error) {
+                    controller.getView().setBusy(false);
 
-                    var sErrorMessage = "Error regenerating data";
+                    var errorMessage = "Data regeneration failed";
                     try {
-                        var oErrorData = JSON.parse(oError.responseText);
-                        if (oErrorData && oErrorData.error && oErrorData.error.message && oErrorData.error.message.value) {
-                            sErrorMessage = oErrorData.error.message.value;
+                        var errorData = JSON.parse(error.responseText);
+                        if (errorData && errorData.error && errorData.error.message && errorData.error.message.value) {
+                            errorMessage = errorData.error.message.value;
                         }
-                    } catch (e) {
-                        // Handle parsing error
+                    } catch (parseError) {
+                        
                     }
 
-                    MessageBox.error(sErrorMessage);
+                    MessageBox.error(errorMessage);
                 }
             });
         },
 
-        _refreshTableData: function () {
+        refreshAllData: function () {
             this.onClearSearch();
 
-            var oTable = this.byId("salesOrderTable");
-            if (oTable) {
-                var oBinding = oTable.getBinding("items");
-                if (oBinding) {
-                    oBinding.refresh();
+            var mainTable = this.byId("mainSalesTable");
+            if (mainTable) {
+                var tableBinding = mainTable.getBinding("items");
+                if (tableBinding) {
+                    tableBinding.refresh();
                 }
             }
 
-            this._updateRecordCount();
+            this.refreshRecordCount();
         }
     });
 });
