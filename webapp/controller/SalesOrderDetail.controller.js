@@ -1,9 +1,10 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
+    "sap/ui/core/Fragment",
     "sap/f/library",
     "sap/m/MessageBox",
     "sap/m/MessageToast"
-], function (Controller, fioriLibrary, MessageBox, MessageToast) {
+], function (Controller, Fragment, fioriLibrary, MessageBox, MessageToast) {
     "use strict";
 
     return Controller.extend("ns.gwsampleclient.controller.SalesOrderDetail", {
@@ -11,12 +12,15 @@ sap.ui.define([
             this.oRouter = this.getOwnerComponent().getRouter();
             this.oRouter.getRoute("SalesOrderDetail").attachPatternMatched(this._onObjectMatched, this);
 
-
+            
             this.map = null;
             this.geocoder = null;
             this.isGoogleMapsLoaded = false;
 
+            
+            this._productDetailDialog = null;
 
+            
             this._loadGoogleMapsAPI();
         },
 
@@ -35,7 +39,7 @@ sap.ui.define([
             oView.bindElement({
                 path: sObjectPath,
                 parameters: {
-
+                    
                     expand: "ToLineItems,ToLineItems/ToProduct,ToBusinessPartner"
                 },
                 events: {
@@ -46,17 +50,14 @@ sap.ui.define([
                     dataReceived: function (oEvent) {
                         oView.setBusy(false);
 
-
                         var oData = oEvent.getParameter("data");
                         console.log("Sales Order Detail Data:", oData);
-
 
                         if (oData && oData.ToBusinessPartner) {
                             console.log("Business Partner Data loaded:", oData.ToBusinessPartner);
                         } else {
                             console.warn("Business Partner data not available in expansion");
                         }
-
 
                         if (oData && oData.ToLineItems && oData.ToLineItems.results) {
                             console.log("Line Items loaded:", oData.ToLineItems.results.length);
@@ -75,12 +76,10 @@ sap.ui.define([
                 return;
             }
 
-
             var oContext = oElementBinding.getBoundContext();
             if (oContext) {
                 var oData = oContext.getObject();
                 console.log("Binding changed - Current data:", oData);
-
 
                 var sTitle = "Sales Order Details - " + (oData.SalesOrderID || "");
                 oView.byId("detailPage").setTitle(sTitle);
@@ -95,21 +94,119 @@ sap.ui.define([
             return this.getView().getModel(sName);
         },
 
+        
+        
+        onProductLineItemPress: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var oBindingContext = oSource.getBindingContext();
+            
+            if (oBindingContext) {
+                var oLineItemData = oBindingContext.getObject();
+                var sProductId = oLineItemData.ProductID;
+                
+                console.log("Product line item selected:", oLineItemData);
+                
+                if (sProductId) {
+                    
+                    this._openProductDetailDialog(sProductId);
+                } else {
+                    MessageBox.error("Product information is not available for this line item.");
+                }
+            } else {
+                MessageBox.error("Unable to retrieve product information.");
+            }
+        },
 
+        
+        _openProductDetailDialog: function (sProductId) {
+            var oView = this.getView();
+            
+            
+            if (!this._productDetailDialog) {
+                Fragment.load({
+                    id: oView.getId(),
+                    name: "ns.gwsampleclient.view.ProductDetail",
+                    controller: this
+                }).then(function (oDialog) {
+                    
+                    oView.addDependent(oDialog);
+                    this._productDetailDialog = oDialog;
+                    
+                    
+                    this._productDetailDialog.setModel(oView.getModel());
+                    
+                    
+                    this._bindProductDialog(sProductId);
+                    this._productDetailDialog.open();
+                }.bind(this));
+            } else {
+                
+                this._bindProductDialog(sProductId);
+                this._productDetailDialog.open();
+            }
+        },
+
+        
+        _bindProductDialog: function (sProductId) {
+            var sPath = "/ProductSet('" + sProductId + "')";
+            
+            this._productDetailDialog.bindElement({
+                path: sPath,
+                parameters: {
+                    expand: "ToSupplier"
+                },
+                events: {
+                    dataRequested: function () {
+                        this._productDetailDialog.setBusy(true);
+                    }.bind(this),
+                    dataReceived: function (oEvent) {
+                        this._productDetailDialog.setBusy(false);
+                        var oData = oEvent.getParameter("data");
+                        if (oData) {
+                            console.log("Product data loaded:", oData);
+                            
+                            
+                            var sTitle = "Product Details - " + (oData.Name || oData.ProductID);
+                            this._productDetailDialog.setTitle(sTitle);
+                        }
+                    }.bind(this),
+                    change: function () {
+                        var oElementBinding = this._productDetailDialog.getElementBinding();
+                        if (!oElementBinding.getBoundContext()) {
+                            MessageToast.show("Product data could not be loaded.");
+                            this.onCloseProductDialog();
+                        }
+                    }.bind(this)
+                }
+            });
+        },
+
+        
+        onCloseProductDialog: function () {
+            if (this._productDetailDialog) {
+                this._productDetailDialog.close();
+            }
+        },
+
+        
+        onProductDialogClose: function () {
+            
+            if (this._productDetailDialog) {
+                this._productDetailDialog.unbindElement();
+            }
+        },
+
+        
         _loadGoogleMapsAPI: function () {
-
             if (window.google && window.google.maps) {
                 this.isGoogleMapsLoaded = true;
                 this._initializeGoogleMaps();
                 return;
             }
 
-
             var script = document.createElement('script');
             script.type = 'text/javascript';
-
             script.src = 'https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=geometry&callback=onGoogleMapsLoaded';
-
 
             window.onGoogleMapsLoaded = function () {
                 this.isGoogleMapsLoaded = true;
@@ -144,17 +241,14 @@ sap.ui.define([
 
             console.log("Business Partner object:", businessPartner);
 
-
             if (businessPartner && businessPartner.__ref) {
                 console.log("Got business partner reference:", businessPartner.__ref);
-
                 var bpId = this._extractBusinessPartnerIdFromRef(businessPartner.__ref);
                 this._loadBusinessPartnerData(bpId);
                 return;
             }
 
             if (!businessPartner || !businessPartner.Address) {
-
                 var customerId = oData.CustomerID;
                 if (customerId) {
                     console.log("Trying to load business partner with Customer ID:", customerId);
@@ -169,7 +263,6 @@ sap.ui.define([
         },
 
         _extractBusinessPartnerIdFromRef: function (refString) {
-
             var match = refString.match(/BusinessPartnerSet\('([^']+)'\)/);
             return match ? match[1] : null;
         },
@@ -184,7 +277,6 @@ sap.ui.define([
             var sPath = "/BusinessPartnerSet('" + businessPartnerId + "')";
 
             console.log("Loading business partner data from path:", sPath);
-
 
             this.byId("mapContainer").setVisible(true);
             this.byId("mapStatus").setText("Loading business partner data...");
@@ -216,12 +308,8 @@ sap.ui.define([
                 return;
             }
 
-
             this.byId("mapContainer").setVisible(true);
-
-
             this.byId("mapStatus").setText("Loading map...");
-
 
             this._geocodeAndDisplayLocation(address, businessPartner);
         },
@@ -253,7 +341,6 @@ sap.ui.define([
                     console.error("Geocoding failed:", status);
                     this.byId("mapStatus").setText("Could not find location: " + status);
 
-
                     var simplifiedAddress = this._getSimplifiedAddress(businessPartner.Address);
                     if (simplifiedAddress !== address) {
                         MessageToast.show("Trying with simplified address: " + simplifiedAddress);
@@ -279,16 +366,13 @@ sap.ui.define([
                 return;
             }
 
-
             this.map = new google.maps.Map(mapElement, {
                 center: location,
                 zoom: 15,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
 
-
             var infoContent = this._createInfoWindowContent(businessPartner, address);
-
 
             var marker = new google.maps.Marker({
                 position: location,
@@ -297,16 +381,13 @@ sap.ui.define([
                 animation: google.maps.Animation.DROP
             });
 
-
             var infoWindow = new google.maps.InfoWindow({
                 content: infoContent
             });
 
-
             marker.addListener('click', function () {
                 infoWindow.open(this.map, marker);
             }.bind(this));
-
 
             infoWindow.open(this.map, marker);
 
@@ -338,13 +419,12 @@ sap.ui.define([
         onHideMap: function () {
             this.byId("mapContainer").setVisible(false);
             if (this.map) {
-
                 this.map = null;
             }
             MessageToast.show("Map hidden");
         },
 
-
+        
         formatCurrency: function (sValue, sCurrency) {
             if (!sValue || !sCurrency) {
                 return "";
@@ -361,20 +441,26 @@ sap.ui.define([
             }).format(oDate);
         },
 
-
+        
         onDataError: function (oError) {
             console.error("Error loading sales order details:", oError);
             MessageBox.error("Failed to load sales order details. Please try again.");
         },
 
-
+        
         onExit: function () {
-
+            
             if (this.map) {
                 this.map = null;
             }
             if (this.geocoder) {
                 this.geocoder = null;
+            }
+
+            
+            if (this._productDetailDialog) {
+                this._productDetailDialog.destroy();
+                this._productDetailDialog = null;
             }
         }
     });

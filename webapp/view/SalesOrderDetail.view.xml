@@ -175,7 +175,8 @@
                             <VBox class="sapUiMediumMargin">
                                 <Table id="lineItemsTable"
                                        items="{path: 'ToLineItems', parameters: {expand: 'ToProduct'}}"
-                                       class="sapUiResponsiveMargin">
+                                       class="sapUiResponsiveMargin"
+                                       mode="SingleSelect">
                                     <headerToolbar>
                                         <Toolbar>
                                             <Title text="Sales Order Line Items" level="H3"/>
@@ -188,8 +189,8 @@
                                         <Column width="8%">
                                             <Text text="Position"/>
                                         </Column>
-                                        <Column width="15%">
-                                            <Text text="Product"/>
+                                        <Column width="20%">
+                                            <Text text="Product Information"/>
                                         </Column>
                                         <Column width="12%">
                                             <Text text="Delivery Date"/>
@@ -206,8 +207,8 @@
                                         <Column width="10%">
                                             <Text text="Tax Amount"/>
                                         </Column>
-                                        <Column width="7%">
-                                            <Text text="Currency"/>
+                                        <Column width="10%">
+                                            <Text text="Actions"/>
                                         </Column>
                                     </columns>
                                     
@@ -215,13 +216,26 @@
                                         <ColumnListItem>
                                             <cells>
                                                 <Text text="{ItemPosition}"/>
-                                                <Text text="{ProductID} - {ToProduct/Name}"/>
+                                                <VBox>
+                                                    <Link text="{ProductID} - {ToProduct/Name}"
+                                                          press="onProductLineItemPress"
+                                                          emphasized="true"/>
+                                                    <Text text="Category: {ToProduct/Category}" 
+                                                          class="sapUiTinyText"/>
+                                                    <Text text="Price: {ToProduct/Price} {ToProduct/CurrencyCode}" 
+                                                          class="sapUiTinyText"/>
+                                                </VBox>
+                                                
                                                 <Text text="{path: 'DeliveryDate', type: 'sap.ui.model.odata.type.DateTime', formatOptions: {pattern: 'dd/MM/yyyy'}}"/>
                                                 <Text text="{Quantity} {QuantityUnit}"/>
-                                                <Text text="{GrossAmount}"/>
-                                                <Text text="{NetAmount}"/>
-                                                <Text text="{TaxAmount}"/>
-                                                <Text text="{CurrencyCode}"/>
+                                                <Text text="{GrossAmount} {CurrencyCode}"/>
+                                                <Text text="{NetAmount} {CurrencyCode}"/>
+                                                <Text text="{TaxAmount} {CurrencyCode}"/>
+                                                <Button text="View Product"
+                                                       icon="sap-icon://detail-view"
+                                                       type="Transparent"
+                                                       press="onProductLineItemPress"
+                                                       tooltip="View detailed product information"/>
                                             </cells>
                                         </ColumnListItem>
                                     </items>

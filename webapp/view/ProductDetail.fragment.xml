@@ -1,0 +1,168 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:f="sap.f" xmlns:form="sap.ui.layout.form" xmlns:core="sap.ui.core">
+    <Dialog id="productDetailDialog" 
+            title="Product Details" 
+            contentWidth="800px" 
+            contentHeight="600px"
+            draggable="true"
+            resizable="true"
+            afterClose="onProductDialogClose">
+        <content>
+            <IconTabBar id="productIconTabBar" class="sapUiResponsiveContentPadding">
+                <items>
+                    <IconTabFilter text="General Information" key="general" icon="sap-icon://product">
+                        <content>
+                            <VBox class="sapUiMediumMargin">
+                                <Panel headerText="Product Information" class="sapUiResponsiveMargin">
+                                    <content>
+                                        <form:SimpleForm id="productGeneralForm"
+                                                       editable="false"
+                                                       layout="ResponsiveGridLayout"
+                                                       labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12"
+                                                       adjustLabelSpan="false"
+                                                       emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
+                                                       columnsXL="2" columnsL="2" columnsM="1"
+                                                       singleContainerFullSize="false">
+                                            <form:content>
+                                                <Label text="Product ID"/>
+                                                <Text text="{ProductID}"/>
+                                                
+                                                <Label text="Product Name"/>
+                                                <Text text="{Name}"/>
+                                                
+                                                <Label text="Category"/>
+                                                <Text text="{Category}"/>
+                                                
+                                                <Label text="Type Code"/>
+                                                <Text text="{TypeCode}"/>
+                                                
+                                                <Label text="Description"/>
+                                                <Text text="{Description}"/>
+                                                
+                                                <Label text="Description Language"/>
+                                                <Text text="{DescriptionLanguage}"/>
+                                                
+                                                <Label text="Name Language"/>
+                                                <Text text="{NameLanguage}"/>
+                                                
+                                                <Label text="Tax Tariff Code"/>
+                                                <Text text="{TaxTarifCode}"/>
+                                            </form:content>
+                                        </form:SimpleForm>
+                                    </content>
+                                </Panel>
+                            </VBox>
+                        </content>
+                    </IconTabFilter>
+
+                    <IconTabFilter text="Pricing and Financial" key="pricing" icon="sap-icon://money-bills">
+                        <content>
+                            <VBox class="sapUiMediumMargin">
+                                <Panel headerText="Price Information" class="sapUiResponsiveMargin">
+                                    <content>
+                                        <form:SimpleForm id="productPricingForm"
+                                                       editable="false"
+                                                       layout="ResponsiveGridLayout"
+                                                       labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12"
+                                                       adjustLabelSpan="false"
+                                                       emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
+                                                       columnsXL="2" columnsL="2" columnsM="1"
+                                                       singleContainerFullSize="false">
+                                            <form:content>
+                                                <Label text="Unit Price"/>
+                                                <Text text="{Price} {CurrencyCode}"/>
+                                                
+                                                <Label text="Currency Code"/>
+                                                <Text text="{CurrencyCode}"/>
+                                                
+                                                <Label text="Measure Unit"/>
+                                                <Text text="{MeasureUnit}"/>
+                                                
+                                                <Label text="Tax Tariff Code"/>
+                                                <Text text="{TaxTarifCode}"/>
+                                            </form:content>
+                                        </form:SimpleForm>
+                                    </content>
+                                </Panel>
+                            </VBox>
+                        </content>
+                    </IconTabFilter>
+
+                    <IconTabFilter text="Physical Properties" key="physical" icon="sap-icon://measure">
+                        <content>
+                            <VBox class="sapUiMediumMargin">
+                                <Panel headerText="Dimensions and Weight" class="sapUiResponsiveMargin">
+                                    <content>
+                                        <form:SimpleForm id="productPhysicalForm"
+                                                       editable="false"
+                                                       layout="ResponsiveGridLayout"
+                                                       labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12"
+                                                       adjustLabelSpan="false"
+                                                       emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
+                                                       columnsXL="2" columnsL="2" columnsM="1"
+                                                       singleContainerFullSize="false">
+                                            <form:content>
+                                                <Label text="Weight Measure"/>
+                                                <Text text="{WeightMeasure} {WeightUnit}"/>
+                                                
+                                                <Label text="Weight Unit"/>
+                                                <Text text="{WeightUnit}"/>
+                                                
+                                                <Label text="Width"/>
+                                                <Text text="{Width} {DimUnit}"/>
+                                                
+                                                <Label text="Depth"/>
+                                                <Text text="{Depth} {DimUnit}"/>
+                                                
+                                                <Label text="Height"/>
+                                                <Text text="{Height} {DimUnit}"/>
+                                                
+                                                <Label text="Dimension Unit"/>
+                                                <Text text="{DimUnit}"/>
+                                            </form:content>
+                                        </form:SimpleForm>
+                                    </content>
+                                </Panel>
+                            </VBox>
+                        </content>
+                    </IconTabFilter>
+
+                    <IconTabFilter text="Supplier Information" key="supplier" icon="sap-icon://supplier">
+                        <content>
+                            <VBox class="sapUiMediumMargin">
+                                <Panel headerText="Supplier Details" class="sapUiResponsiveMargin">
+                                    <content>
+                                        <form:SimpleForm id="productSupplierForm"
+                                                       editable="false"
+                                                       layout="ResponsiveGridLayout"
+                                                       labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12"
+                                                       adjustLabelSpan="false"
+                                                       emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
+                                                       columnsXL="2" columnsL="2" columnsM="1"
+                                                       singleContainerFullSize="false">
+                                            <form:content>
+                                                <Label text="Supplier ID"/>
+                                                <Text text="{SupplierID}"/>
+                                                
+                                                <Label text="Supplier Name"/>
+                                                <Text text="{SupplierName}"/>
+                                                
+                                                <Label text="Created At"/>
+                                                <Text text="{path: 'CreatedAt', type: 'sap.ui.model.odata.type.DateTime'}"/>
+                                                
+                                                <Label text="Changed At"/>
+                                                <Text text="{path: 'ChangedAt', type: 'sap.ui.model.odata.type.DateTime'}"/>
+                                            </form:content>
+                                        </form:SimpleForm>
+                                    </content>
+                                </Panel>
+                            </VBox>
+                        </content>
+                    </IconTabFilter>
+                </items>
+            </IconTabBar>
+        </content>
+        <beginButton>
+            <Button text="Close" press="onCloseProductDialog" type="Emphasized"/>
+        </beginButton>
+    </Dialog>
+</core:FragmentDefinition>
