@@ -12,15 +12,15 @@ sap.ui.define([
             this.oRouter = this.getOwnerComponent().getRouter();
             this.oRouter.getRoute("SalesOrderDetail").attachPatternMatched(this._onObjectMatched, this);
 
-            
+
             this.map = null;
             this.geocoder = null;
             this.isGoogleMapsLoaded = false;
 
-            
+
             this._productDetailDialog = null;
 
-            
+
             this._loadGoogleMapsAPI();
         },
 
@@ -39,7 +39,6 @@ sap.ui.define([
             oView.bindElement({
                 path: sObjectPath,
                 parameters: {
-                    
                     expand: "ToLineItems,ToLineItems/ToProduct,ToBusinessPartner"
                 },
                 events: {
@@ -62,7 +61,10 @@ sap.ui.define([
                         if (oData && oData.ToLineItems && oData.ToLineItems.results) {
                             console.log("Line Items loaded:", oData.ToLineItems.results.length);
                         }
-                    }
+
+
+                        this._updateButtonVisibility();
+                    }.bind(this)
                 }
             });
         },
@@ -83,6 +85,197 @@ sap.ui.define([
 
                 var sTitle = "Sales Order Details - " + (oData.SalesOrderID || "");
                 oView.byId("detailPage").setTitle(sTitle);
+
+
+                this._updateButtonVisibility();
+            }
+        },
+
+
+        _updateButtonVisibility: function () {
+            var oContext = this.getView().getBindingContext();
+            if (!oContext) {
+                return;
+            }
+
+            var oData = oContext.getObject();
+            var sDeliveryStatus = oData.DeliveryStatusDescription;
+            var sLifecycleStatus = oData.LifecycleStatusDescription;
+
+            console.log("Updating button visibility - DeliveryStatus:", sDeliveryStatus, "LifecycleStatus:", sLifecycleStatus);
+
+
+            var oConfirmButton = this.byId("confirmOrderButton");
+            var oGoodsIssueButton = this.byId("goodsIssueButton");
+            var oInvoiceButton = this.byId("invoiceButton");
+
+
+            var bCanConfirm = this._canConfirmOrder(sDeliveryStatus, sLifecycleStatus);
+            var bCanCreateGoodsIssue = this._canCreateGoodsIssue(sDeliveryStatus, sLifecycleStatus);
+            var bCanCreateInvoice = this._canCreateInvoice(sDeliveryStatus, sLifecycleStatus);
+
+            if (oConfirmButton) oConfirmButton.setVisible(bCanConfirm);
+            if (oGoodsIssueButton) oGoodsIssueButton.setVisible(bCanCreateGoodsIssue);
+            if (oInvoiceButton) oInvoiceButton.setVisible(bCanCreateInvoice);
+
+            console.log("Button visibility - Confirm:", bCanConfirm, "GoodsIssue:", bCanCreateGoodsIssue, "Invoice:", bCanCreateInvoice);
+        },
+
+
+        _canConfirmOrder: function (sDeliveryStatus, sLifecycleStatus) {
+
+
+
+            return (sDeliveryStatus === "Initial" && sLifecycleStatus === "New");
+        },
+
+
+        _canCreateGoodsIssue: function (sDeliveryStatus, sLifecycleStatus) {
+
+
+
+            return (sDeliveryStatus === "Initial" && sLifecycleStatus === "In Progress");
+        },
+
+
+        _canCreateInvoice: function (sDeliveryStatus, sLifecycleStatus) {
+
+
+
+            return (sDeliveryStatus === "Delivered" && sLifecycleStatus === "In Progress");
+        },
+
+
+        onConfirmSalesOrder: function () {
+            var oContext = this.getView().getBindingContext();
+            if (!oContext) {
+                MessageBox.error("No sales order data available.");
+                return;
+            }
+
+            var oData = oContext.getObject();
+            var sSalesOrderId = oData.SalesOrderID;
+
+            MessageBox.confirm(
+                "Do you want to confirm Sales Order " + sSalesOrderId + "?",
+                {
+                    title: "Confirm Sales Order",
+                    onClose: function (oAction) {
+                        if (oAction === MessageBox.Action.OK) {
+                            this._callSalesOrderFunction("SalesOrder_Confirm", sSalesOrderId, "confirmed");
+                        }
+                    }.bind(this)
+                }
+            );
+        },
+
+
+        onCreateGoodsIssue: function () {
+            var oContext = this.getView().getBindingContext();
+            if (!oContext) {
+                MessageBox.error("No sales order data available.");
+                return;
+            }
+
+            var oData = oContext.getObject();
+            var sSalesOrderId = oData.SalesOrderID;
+
+            MessageBox.confirm(
+                "Do you want to create goods issue for Sales Order " + sSalesOrderId + "?",
+                {
+                    title: "Create Goods Issue",
+                    onClose: function (oAction) {
+                        if (oAction === MessageBox.Action.OK) {
+                            this._callSalesOrderFunction("SalesOrder_GoodsIssueCreated", sSalesOrderId, "goods issue created");
+                        }
+                    }.bind(this)
+                }
+            );
+        },
+
+
+        onCreateInvoice: function () {
+            var oContext = this.getView().getBindingContext();
+            if (!oContext) {
+                MessageBox.error("No sales order data available.");
+                return;
+            }
+
+            var oData = oContext.getObject();
+            var sSalesOrderId = oData.SalesOrderID;
+
+            MessageBox.confirm(
+                "Do you want to create invoice for Sales Order " + sSalesOrderId + "?",
+                {
+                    title: "Create Invoice",
+                    onClose: function (oAction) {
+                        if (oAction === MessageBox.Action.OK) {
+                            this._callSalesOrderFunction("SalesOrder_InvoiceCreated", sSalesOrderId, "invoice created");
+                        }
+                    }.bind(this)
+                }
+            );
+        },
+
+
+        onCancelSalesOrder: function () {
+            MessageBox.confirm(
+                "Do you want to cancel and go back to the Sales Orders list?",
+                {
+                    title: "Cancel",
+                    onClose: function (oAction) {
+                        if (oAction === MessageBox.Action.OK) {
+                            this.onNavBack();
+                        }
+                    }.bind(this)
+                }
+            );
+        },
+
+
+        _callSalesOrderFunction: function (sFunctionName, sSalesOrderId, sActionDescription) {
+            var oModel = this.getView().getModel();
+            var oView = this.getView();
+
+            oView.setBusy(true);
+
+            oModel.callFunction("/" + sFunctionName, {
+                method: "POST",
+                urlParameters: {
+                    SalesOrderID: sSalesOrderId
+                },
+                success: function (oData, response) {
+                    oView.setBusy(false);
+
+                    MessageToast.show("Sales Order " + sSalesOrderId + " has been " + sActionDescription + " successfully!");
+
+
+                    this._refreshSalesOrderData();
+
+                }.bind(this),
+                error: function (oError) {
+                    oView.setBusy(false);
+
+                    var sErrorMessage = "Failed to process Sales Order " + sSalesOrderId;
+                    try {
+                        var oErrorData = JSON.parse(oError.responseText);
+                        if (oErrorData && oErrorData.error && oErrorData.error.message && oErrorData.error.message.value) {
+                            sErrorMessage = oErrorData.error.message.value;
+                        }
+                    } catch (parseError) {
+
+                    }
+
+                    MessageBox.error(sErrorMessage);
+                }.bind(this)
+            });
+        },
+
+
+        _refreshSalesOrderData: function () {
+            var oElementBinding = this.getView().getElementBinding();
+            if (oElementBinding) {
+                oElementBinding.refresh(true);
             }
         },
 
@@ -94,20 +287,18 @@ sap.ui.define([
             return this.getView().getModel(sName);
         },
 
-        
-        
+
         onProductLineItemPress: function (oEvent) {
             var oSource = oEvent.getSource();
             var oBindingContext = oSource.getBindingContext();
-            
+
             if (oBindingContext) {
                 var oLineItemData = oBindingContext.getObject();
                 var sProductId = oLineItemData.ProductID;
-                
+
                 console.log("Product line item selected:", oLineItemData);
-                
+
                 if (sProductId) {
-                    
                     this._openProductDetailDialog(sProductId);
                 } else {
                     MessageBox.error("Product information is not available for this line item.");
@@ -117,39 +308,31 @@ sap.ui.define([
             }
         },
 
-        
+
         _openProductDetailDialog: function (sProductId) {
             var oView = this.getView();
-            
-            
+
             if (!this._productDetailDialog) {
                 Fragment.load({
                     id: oView.getId(),
                     name: "ns.gwsampleclient.view.ProductDetail",
                     controller: this
                 }).then(function (oDialog) {
-                    
                     oView.addDependent(oDialog);
                     this._productDetailDialog = oDialog;
-                    
-                    
                     this._productDetailDialog.setModel(oView.getModel());
-                    
-                    
                     this._bindProductDialog(sProductId);
                     this._productDetailDialog.open();
                 }.bind(this));
             } else {
-                
                 this._bindProductDialog(sProductId);
                 this._productDetailDialog.open();
             }
         },
 
-        
         _bindProductDialog: function (sProductId) {
             var sPath = "/ProductSet('" + sProductId + "')";
-            
+
             this._productDetailDialog.bindElement({
                 path: sPath,
                 parameters: {
@@ -164,8 +347,6 @@ sap.ui.define([
                         var oData = oEvent.getParameter("data");
                         if (oData) {
                             console.log("Product data loaded:", oData);
-                            
-                            
                             var sTitle = "Product Details - " + (oData.Name || oData.ProductID);
                             this._productDetailDialog.setTitle(sTitle);
                         }
@@ -181,22 +362,19 @@ sap.ui.define([
             });
         },
 
-        
         onCloseProductDialog: function () {
             if (this._productDetailDialog) {
                 this._productDetailDialog.close();
             }
         },
 
-        
         onProductDialogClose: function () {
-            
             if (this._productDetailDialog) {
                 this._productDetailDialog.unbindElement();
             }
         },
 
-        
+
         _loadGoogleMapsAPI: function () {
             if (window.google && window.google.maps) {
                 this.isGoogleMapsLoaded = true;
@@ -424,7 +602,7 @@ sap.ui.define([
             MessageToast.show("Map hidden");
         },
 
-        
+
         formatCurrency: function (sValue, sCurrency) {
             if (!sValue || !sCurrency) {
                 return "";
@@ -441,15 +619,13 @@ sap.ui.define([
             }).format(oDate);
         },
 
-        
         onDataError: function (oError) {
             console.error("Error loading sales order details:", oError);
             MessageBox.error("Failed to load sales order details. Please try again.");
         },
 
-        
         onExit: function () {
-            
+
             if (this.map) {
                 this.map = null;
             }
@@ -457,7 +633,7 @@ sap.ui.define([
                 this.geocoder = null;
             }
 
-            
+
             if (this._productDetailDialog) {
                 this._productDetailDialog.destroy();
                 this._productDetailDialog = null;

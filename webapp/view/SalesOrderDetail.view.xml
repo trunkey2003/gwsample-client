@@ -2,7 +2,8 @@
     xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
     xmlns="sap.m"
     xmlns:f="sap.f"
-    xmlns:html="http://www.w3.org/1999/xhtml">
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:form="sap.ui.layout.form">
     <Page id="detailPage" title="Sales Order Details" showNavButton="true" navButtonPress="onNavBack">
         <content>
             <ObjectHeader id="objectHeader"
@@ -22,6 +23,49 @@
                 </statuses>
             </ObjectHeader>
 
+            <!-- NEW: Action Buttons Panel -->
+            <Panel headerText="Sales Order Actions" class="sapUiResponsiveMargin">
+                <content>
+                    <HBox alignItems="Center" justifyContent="SpaceBetween" class="sapUiMediumMargin">
+                        <HBox alignItems="Center" class="sapUiTinyMarginEnd">
+                            <Button id="confirmOrderButton"
+                                   text="Confirm Sales Order"
+                                   type="Emphasized"
+                                   icon="sap-icon://accept"
+                                   press="onConfirmSalesOrder"
+                                   visible="false"
+                                   class="sapUiTinyMarginEnd"
+                                   tooltip="Confirm the sales order to proceed with processing"/>
+                            
+                            <Button id="goodsIssueButton"
+                                   text="Create Goods Issue"
+                                   type="Accept"
+                                   icon="sap-icon://shipping-status"
+                                   press="onCreateGoodsIssue"
+                                   visible="false"
+                                   class="sapUiTinyMarginEnd"
+                                   tooltip="Create goods issue for delivery processing"/>
+                            
+                            <Button id="invoiceButton"
+                                   text="Create Invoice"
+                                   type="Success"
+                                   icon="sap-icon://document"
+                                   press="onCreateInvoice"
+                                   visible="false"
+                                   class="sapUiTinyMarginEnd"
+                                   tooltip="Create invoice for billing"/>
+                        </HBox>
+                        
+                        <Button id="cancelButton"
+                               text="Cancel"
+                               type="Reject"
+                               icon="sap-icon://nav-back"
+                               press="onCancelSalesOrder"
+                               tooltip="Cancel and return to sales orders list"/>
+                    </HBox>
+                </content>
+            </Panel>
+
             <IconTabBar id="iconTabBar" class="sapUiResponsiveContentPadding">
                 <items>
                     <IconTabFilter text="Header Information" key="header" icon="sap-icon://detail-view">
@@ -36,8 +80,7 @@
                                                        adjustLabelSpan="false"
                                                        emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
                                                        columnsXL="2" columnsL="2" columnsM="1"
-                                                       singleContainerFullSize="false"
-                                                       xmlns:form="sap.ui.layout.form">
+                                                       singleContainerFullSize="false">
                                             <form:content>
                                                 <Label text="Sale Order No"/>
                                                 <Text text="{SalesOrderID}"/>
@@ -60,6 +103,9 @@
                                                 <Label text="Delivery Status"/>
                                                 <Text text="{DeliveryStatusDescription}"/>
                                                 
+                                                <Label text="Lifecycle Status"/>
+                                                <Text text="{LifecycleStatusDescription}"/>
+                                                
                                                 <Label text="Currency"/>
                                                 <Text text="{CurrencyCode}"/>
                                                 
@@ -75,11 +121,45 @@
                                         </form:SimpleForm>
                                     </content>
                                 </Panel>
+
+                                <!-- NEW: Status Information Panel -->
+                                <Panel headerText="Status Information" class="sapUiResponsiveMargin">
+                                    <content>
+                                        <form:SimpleForm id="statusForm"
+                                                       editable="false"
+                                                       layout="ResponsiveGridLayout"
+                                                       labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12"
+                                                       adjustLabelSpan="false"
+                                                       emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
+                                                       columnsXL="2" columnsL="2" columnsM="1"
+                                                       singleContainerFullSize="false">
+                                            <form:content>
+                                                <Label text="Delivery Status Code"/>
+                                                <Text text="{DeliveryStatus}"/>
+                                                
+                                                <Label text="Delivery Status Description"/>
+                                                <Text text="{DeliveryStatusDescription}"/>
+                                                
+                                                <Label text="Lifecycle Status Code"/>
+                                                <Text text="{LifecycleStatus}"/>
+                                                
+                                                <Label text="Lifecycle Status Description"/>
+                                                <Text text="{LifecycleStatusDescription}"/>
+                                                
+                                                <Label text="Billing Status Code"/>
+                                                <Text text="{BillingStatus}"/>
+                                                
+                                                <Label text="Billing Status Description"/>
+                                                <Text text="{BillingStatusDescription}"/>
+                                            </form:content>
+                                        </form:SimpleForm>
+                                    </content>
+                                </Panel>
                             </VBox>
                         </content>
                     </IconTabFilter>
 
-                    <IconTabFilter text="Business Partner Details" key="businessPartner" icon="sap-icon://business-partner">
+                    <IconTabFilter text="Business Partner Details" key="businessPartner" icon="sap-icon://customer">
                         <content>
                             <VBox class="sapUiMediumMargin">
                                 <Panel headerText="Business Partner Information" class="sapUiResponsiveMargin">
@@ -91,8 +171,7 @@
                                                        adjustLabelSpan="false"
                                                        emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
                                                        columnsXL="2" columnsL="2" columnsM="1"
-                                                       singleContainerFullSize="false"
-                                                       xmlns:form="sap.ui.layout.form">
+                                                       singleContainerFullSize="false">
                                             <form:content>
                                                 <Label text="Business Partner ID"/>
                                                 <Text text="{ToBusinessPartner/BusinessPartnerID}"/>
@@ -186,7 +265,7 @@
                                     </headerToolbar>
                                     
                                     <columns>
-                                        <Column width="8%">
+                                        <Column width="15%">
                                             <Text text="Position"/>
                                         </Column>
                                         <Column width="20%">
@@ -207,13 +286,10 @@
                                         <Column width="10%">
                                             <Text text="Tax Amount"/>
                                         </Column>
-                                        <Column width="10%">
-                                            <Text text="Actions"/>
-                                        </Column>
                                     </columns>
                                     
                                     <items>
-                                        <ColumnListItem>
+                                        <ColumnListItem press="onProductLineItemPress">
                                             <cells>
                                                 <Text text="{ItemPosition}"/>
                                                 <VBox>
@@ -231,11 +307,6 @@
                                                 <Text text="{GrossAmount} {CurrencyCode}"/>
                                                 <Text text="{NetAmount} {CurrencyCode}"/>
                                                 <Text text="{TaxAmount} {CurrencyCode}"/>
-                                                <Button text="View Product"
-                                                       icon="sap-icon://detail-view"
-                                                       type="Transparent"
-                                                       press="onProductLineItemPress"
-                                                       tooltip="View detailed product information"/>
                                             </cells>
                                         </ColumnListItem>
                                     </items>
