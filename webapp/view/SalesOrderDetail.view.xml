@@ -1,7 +1,8 @@
 <mvc:View controllerName="ns.gwsampleclient.controller.SalesOrderDetail"
     xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
     xmlns="sap.m"
-    xmlns:f="sap.f">
+    xmlns:f="sap.f"
+    xmlns:html="http://www.w3.org/1999/xhtml">
     <Page id="detailPage" title="Sales Order Details" showNavButton="true" navButtonPress="onNavBack">
         <content>
             <ObjectHeader id="objectHeader"
@@ -136,6 +137,33 @@
                                                 <Text text="{ToBusinessPartner/Address/AddressType}"/>
                                             </form:content>
                                         </form:SimpleForm>
+                                    </content>
+                                </Panel>
+                                
+                                <!-- Map Panel -->
+                                <Panel headerText="Business Partner Location" class="sapUiResponsiveMargin">
+                                    <content>
+                                        <VBox class="sapUiMediumMargin">
+                                            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                                                <Button id="showLocationButton"
+                                                       text="Show Location on Map"
+                                                       type="Emphasized"
+                                                       press="onShowBusinessPartnerLocation"
+                                                       icon="sap-icon://map"/>
+                                            </HBox>
+                                            
+                                            <!-- Map Container -->
+                                            <VBox id="mapContainer" visible="false" class="sapUiMediumMarginTop">
+                                                <html:div id="googleMap" style="height: 400px; width: 100%; border: 1px solid #ccc;"></html:div>
+                                                <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiSmallMarginTop">
+                                                    <Text id="mapStatus" text="Map loaded successfully" class="sapUiTinyText"/>
+                                                    <Button text="Hide Map" 
+                                                           press="onHideMap" 
+                                                           icon="sap-icon://decline"
+                                                           type="Transparent"/>
+                                                </HBox>
+                                            </VBox>
+                                        </VBox>
                                     </content>
                                 </Panel>
                             </VBox>
