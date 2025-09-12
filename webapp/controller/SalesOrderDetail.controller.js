@@ -25,15 +25,32 @@ sap.ui.define([
             oView.bindElement({
                 path: sObjectPath,
                 parameters: {
-                    expand: "ToLineItems,ToLineItems/ToProduct"
+                    // Expand to include line items with product details and business partner details
+                    expand: "ToLineItems,ToLineItems/ToProduct,ToBusinessPartner"
                 },
                 events: {
                     change: this._onBindingChange.bind(this),
                     dataRequested: function () {
                         oView.setBusy(true);
                     },
-                    dataReceived: function () {
+                    dataReceived: function (oEvent) {
                         oView.setBusy(false);
+                        
+                        // Log the received data for debugging
+                        var oData = oEvent.getParameter("data");
+                        console.log("Sales Order Detail Data:", oData);
+                        
+                        // Check if business partner data is available
+                        if (oData && oData.ToBusinessPartner) {
+                            console.log("Business Partner Data loaded:", oData.ToBusinessPartner);
+                        } else {
+                            console.warn("Business Partner data not available in expansion");
+                        }
+                        
+                        // Check if line items are available
+                        if (oData && oData.ToLineItems && oData.ToLineItems.results) {
+                            console.log("Line Items loaded:", oData.ToLineItems.results.length);
+                        }
                     }
                 }
             });
@@ -47,6 +64,17 @@ sap.ui.define([
                 this.oRouter.getTargets().display("notFound");
                 return;
             }
+
+            // Additional logic to handle binding change if needed
+            var oContext = oElementBinding.getBoundContext();
+            if (oContext) {
+                var oData = oContext.getObject();
+                console.log("Binding changed - Current data:", oData);
+                
+                // Update page title with sales order ID
+                var sTitle = "Sales Order Details - " + (oData.SalesOrderID || "");
+                oView.byId("detailPage").setTitle(sTitle);
+            }
         },
 
         onNavBack: function () {
@@ -55,6 +83,29 @@ sap.ui.define([
 
         getModel: function (sName) {
             return this.getView().getModel(sName);
+        },
+
+        // Additional helper methods for formatting if needed
+        formatCurrency: function (sValue, sCurrency) {
+            if (!sValue || !sCurrency) {
+                return "";
+            }
+            return sValue + " " + sCurrency;
+        },
+
+        formatDate: function (oDate) {
+            if (!oDate) {
+                return "";
+            }
+            return sap.ui.core.format.DateFormat.getDateInstance({
+                pattern: "dd/MM/yyyy"
+            }).format(oDate);
+        },
+
+        // Method to handle any errors in data loading
+        onDataError: function (oError) {
+            console.error("Error loading sales order details:", oError);
+            sap.m.MessageBox.error("Failed to load sales order details. Please try again.");
         }
     });
 });

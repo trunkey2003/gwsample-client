@@ -10,7 +10,7 @@
                          numberUnit="{CurrencyCode}"
                          backgroundDesign="Solid">
                 <attributes>
-                    <ObjectAttribute title="Customer" text="{CustomerName}"/>
+                    <ObjectAttribute title="Customer" text="{CustomerID} - {CustomerName}"/>
                     <ObjectAttribute title="Status" text="{LifecycleStatusDescription}"/>
                     <ObjectAttribute title="Net Amount" text="{NetAmount} {CurrencyCode}"/>
                     <ObjectAttribute title="Tax Amount" text="{TaxAmount} {CurrencyCode}"/>
@@ -23,87 +23,182 @@
 
             <IconTabBar id="iconTabBar" class="sapUiResponsiveContentPadding">
                 <items>
-                    <IconTabFilter text="General Information" key="general">
+                    <IconTabFilter text="Header Information" key="header" icon="sap-icon://detail-view">
                         <content>
-                            <form:SimpleForm id="generalForm"
-                                           editable="false"
-                                           layout="ResponsiveGridLayout"
-                                           xmlns:form="sap.ui.layout.form">
-                                <form:content>
-                                    <Label text="Sales Order ID"/>
-                                    <Text text="{SalesOrderID}"/>
-                                    
-                                    <Label text="Customer ID"/>
-                                    <Text text="{CustomerID}"/>
-                                    
-                                    <Label text="Customer Name"/>
-                                    <Text text="{CustomerName}"/>
-                                    
-                                    <Label text="Currency"/>
-                                    <Text text="{CurrencyCode}"/>
-                                    
-                                    <Label text="Created At"/>
-                                    <Text text="{path: 'CreatedAt', type: 'sap.ui.model.odata.type.DateTime'}"/>
-                                    
-                                    <Label text="Changed At"/>
-                                    <Text text="{path: 'ChangedAt', type: 'sap.ui.model.odata.type.DateTime'}"/>
-                                    
-                                    <Label text="Notes"/>
-                                    <Text text="{Note}"/>
-                                </form:content>
-                            </form:SimpleForm>
+                            <VBox class="sapUiMediumMargin">
+                                <Panel headerText="Sales Order Header" class="sapUiResponsiveMargin">
+                                    <content>
+                                        <form:SimpleForm id="headerForm"
+                                                       editable="false"
+                                                       layout="ResponsiveGridLayout"
+                                                       labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12"
+                                                       adjustLabelSpan="false"
+                                                       emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
+                                                       columnsXL="2" columnsL="2" columnsM="1"
+                                                       singleContainerFullSize="false"
+                                                       xmlns:form="sap.ui.layout.form">
+                                            <form:content>
+                                                <Label text="Sale Order No"/>
+                                                <Text text="{SalesOrderID}"/>
+                                                
+                                                <Label text="Customer"/>
+                                                <Text text="{CustomerID} - {CustomerName}"/>
+                                                
+                                                <Label text="Gross Amount"/>
+                                                <Text text="{GrossAmount} {CurrencyCode}"/>
+                                                
+                                                <Label text="Net Amount"/>
+                                                <Text text="{NetAmount} {CurrencyCode}"/>
+                                                
+                                                <Label text="Tax Amount"/>
+                                                <Text text="{TaxAmount} {CurrencyCode}"/>
+                                                
+                                                <Label text="Billing Status"/>
+                                                <Text text="{BillingStatusDescription}"/>
+                                                
+                                                <Label text="Delivery Status"/>
+                                                <Text text="{DeliveryStatusDescription}"/>
+                                                
+                                                <Label text="Currency"/>
+                                                <Text text="{CurrencyCode}"/>
+                                                
+                                                <Label text="Created At"/>
+                                                <Text text="{path: 'CreatedAt', type: 'sap.ui.model.odata.type.DateTime'}"/>
+                                                
+                                                <Label text="Changed At"/>
+                                                <Text text="{path: 'ChangedAt', type: 'sap.ui.model.odata.type.DateTime'}"/>
+                                                
+                                                <Label text="Note"/>
+                                                <Text text="{Note}"/>
+                                            </form:content>
+                                        </form:SimpleForm>
+                                    </content>
+                                </Panel>
+                            </VBox>
+                        </content>
+                    </IconTabFilter>
+
+                    <IconTabFilter text="Business Partner Details" key="businessPartner" icon="sap-icon://business-partner">
+                        <content>
+                            <VBox class="sapUiMediumMargin">
+                                <Panel headerText="Business Partner Information" class="sapUiResponsiveMargin">
+                                    <content>
+                                        <form:SimpleForm id="businessPartnerForm"
+                                                       editable="false"
+                                                       layout="ResponsiveGridLayout"
+                                                       labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12"
+                                                       adjustLabelSpan="false"
+                                                       emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
+                                                       columnsXL="2" columnsL="2" columnsM="1"
+                                                       singleContainerFullSize="false"
+                                                       xmlns:form="sap.ui.layout.form">
+                                            <form:content>
+                                                <Label text="Business Partner ID"/>
+                                                <Text text="{ToBusinessPartner/BusinessPartnerID}"/>
+                                                
+                                                <Label text="Company Name"/>
+                                                <Text text="{ToBusinessPartner/CompanyName}"/>
+                                                
+                                                <Label text="Email Address"/>
+                                                <Text text="{ToBusinessPartner/EmailAddress}"/>
+                                                
+                                                <Label text="Phone Number"/>
+                                                <Text text="{ToBusinessPartner/PhoneNumber}"/>
+                                                
+                                                <Label text="Fax Number"/>
+                                                <Text text="{ToBusinessPartner/FaxNumber}"/>
+                                                
+                                                <Label text="Web Address"/>
+                                                <Text text="{ToBusinessPartner/WebAddress}"/>
+                                                
+                                                <Label text="Legal Form"/>
+                                                <Text text="{ToBusinessPartner/LegalForm}"/>
+                                                
+                                                <Label text="Business Partner Role"/>
+                                                <Text text="{ToBusinessPartner/BusinessPartnerRole}"/>
+                                                
+                                                <Label text="Street"/>
+                                                <Text text="{ToBusinessPartner/Address/Street}"/>
+                                                
+                                                <Label text="Building"/>
+                                                <Text text="{ToBusinessPartner/Address/Building}"/>
+                                                
+                                                <Label text="City"/>
+                                                <Text text="{ToBusinessPartner/Address/City}"/>
+                                                
+                                                <Label text="Postal Code"/>
+                                                <Text text="{ToBusinessPartner/Address/PostalCode}"/>
+                                                
+                                                <Label text="Country"/>
+                                                <Text text="{ToBusinessPartner/Address/Country}"/>
+                                                
+                                                <Label text="Address Type"/>
+                                                <Text text="{ToBusinessPartner/Address/AddressType}"/>
+                                            </form:content>
+                                        </form:SimpleForm>
+                                    </content>
+                                </Panel>
+                            </VBox>
                         </content>
                     </IconTabFilter>
                     
-                    <IconTabFilter text="Line Items" key="lineItems">
+                    <IconTabFilter text="Line Items" key="lineItems" icon="sap-icon://list">
                         <content>
-                            <Table id="lineItemsTable"
-                                   items="{path: 'ToLineItems', parameters: {expand: 'ToProduct'}}"
-                                   class="sapUiResponsiveMargin">
-                                <headerToolbar>
-                                    <Toolbar>
-                                        <Title text="Line Items" level="H3"/>
-                                    </Toolbar>
-                                </headerToolbar>
-                                
-                                <columns>
-                                    <Column>
-                                        <Text text="Position"/>
-                                    </Column>
-                                    <Column>
-                                        <Text text="Product ID"/>
-                                    </Column>
-                                    <Column>
-                                        <Text text="Product Name"/>
-                                    </Column>
-                                    <Column>
-                                        <Text text="Quantity"/>
-                                    </Column>
-                                    <Column>
-                                        <Text text="Unit"/>
-                                    </Column>
-                                    <Column>
-                                        <Text text="Net Amount"/>
-                                    </Column>
-                                    <Column>
-                                        <Text text="Delivery Date"/>
-                                    </Column>
-                                </columns>
-                                
-                                <items>
-                                    <ColumnListItem>
-                                        <cells>
-                                            <Text text="{ItemPosition}"/>
-                                            <Text text="{ProductID}"/>
-                                            <Text text="{ToProduct/Name}"/>
-                                            <Text text="{Quantity}"/>
-                                            <Text text="{QuantityUnit}"/>
-                                            <Text text="{NetAmount} {CurrencyCode}"/>
-                                            <Text text="{path: 'DeliveryDate', type: 'sap.ui.model.odata.type.DateTime'}"/>
-                                        </cells>
-                                    </ColumnListItem>
-                                </items>
-                            </Table>
+                            <VBox class="sapUiMediumMargin">
+                                <Table id="lineItemsTable"
+                                       items="{path: 'ToLineItems', parameters: {expand: 'ToProduct'}}"
+                                       class="sapUiResponsiveMargin">
+                                    <headerToolbar>
+                                        <Toolbar>
+                                            <Title text="Sales Order Line Items" level="H3"/>
+                                            <ToolbarSpacer/>
+                                            <Text text="{= ${ToLineItems}.length} Items" class="sapUiTinyMarginEnd"/>
+                                        </Toolbar>
+                                    </headerToolbar>
+                                    
+                                    <columns>
+                                        <Column width="8%">
+                                            <Text text="Position"/>
+                                        </Column>
+                                        <Column width="15%">
+                                            <Text text="Product"/>
+                                        </Column>
+                                        <Column width="12%">
+                                            <Text text="Delivery Date"/>
+                                        </Column>
+                                        <Column width="10%">
+                                            <Text text="Quantity"/>
+                                        </Column>
+                                        <Column width="10%">
+                                            <Text text="Gross Amount"/>
+                                        </Column>
+                                        <Column width="10%">
+                                            <Text text="Net Amount"/>
+                                        </Column>
+                                        <Column width="10%">
+                                            <Text text="Tax Amount"/>
+                                        </Column>
+                                        <Column width="7%">
+                                            <Text text="Currency"/>
+                                        </Column>
+                                    </columns>
+                                    
+                                    <items>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text text="{ItemPosition}"/>
+                                                <Text text="{ProductID} - {ToProduct/Name}"/>
+                                                <Text text="{path: 'DeliveryDate', type: 'sap.ui.model.odata.type.DateTime', formatOptions: {pattern: 'dd/MM/yyyy'}}"/>
+                                                <Text text="{Quantity} {QuantityUnit}"/>
+                                                <Text text="{GrossAmount}"/>
+                                                <Text text="{NetAmount}"/>
+                                                <Text text="{TaxAmount}"/>
+                                                <Text text="{CurrencyCode}"/>
+                                            </cells>
+                                        </ColumnListItem>
+                                    </items>
+                                </Table>
+                            </VBox>
                         </content>
                     </IconTabFilter>
                 </items>
