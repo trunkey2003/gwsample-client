@@ -11,52 +11,62 @@
                    class="sapUiResponsiveMargin">
                 <content>
                     <VBox class="sapUiMediumMargin">
-                        <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                            <Label text="Order Number:" width="140px"/>
-                            <Input id="salesOrderInput" 
-                                   value="{searchModel>/searchCriteria/salesOrderId}"
-                                   showValueHelp="true"
-                                   valueHelpRequest="onSalesOrderValueHelp"
-                                   placeholder="Search by Order ID"
-                                   width="220px"/>
-                        </HBox>
+                        <!-- Make search form responsive -->
+                        <form:SimpleForm layout="ResponsiveGridLayout"
+                                       labelSpanXL="3" labelSpanL="3" labelSpanM="4" labelSpanS="12"
+                                       adjustLabelSpan="false"
+                                       emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
+                                       columnsXL="2" columnsL="2" columnsM="1"
+                                       singleContainerFullSize="false"
+                                       breakpointXL="1440" breakpointL="1024" breakpointM="600">
+                            <form:content>
+                                <Label text="Order Number:"/>
+                                <Input id="salesOrderInput" 
+                                       value="{searchModel>/searchCriteria/salesOrderId}"
+                                       showValueHelp="true"
+                                       valueHelpRequest="onSalesOrderValueHelp"
+                                       placeholder="Search by Order ID"
+                                       width="100%"/>
 
-                        <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                            <Label text="Customer Info:" width="140px"/>
-                            <Input id="customerInput" 
-                                   value="{searchModel>/searchCriteria/customerName}"
-                                   showValueHelp="true"
-                                   valueHelpRequest="onCustomerValueHelp"
-                                   placeholder="Search by Customer"
-                                   width="220px"/>
-                        </HBox>
+                                <Label text="Customer Info:"/>
+                                <Input id="customerInput" 
+                                       value="{searchModel>/searchCriteria/customerName}"
+                                       showValueHelp="true"
+                                       valueHelpRequest="onCustomerValueHelp"
+                                       placeholder="Search by Customer"
+                                       width="100%"/>
 
-                        <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                            <Label text="Product Info:" width="140px"/>
-                            <Input id="productInput" 
-                                   value="{searchModel>/searchCriteria/productName}"
-                                   showValueHelp="true"
-                                   valueHelpRequest="onProductValueHelp"
-                                   placeholder="Search by Product"
-                                   width="220px"/>
-                        </HBox>
+                                <Label text="Product Info:"/>
+                                <Input id="productInput" 
+                                       value="{searchModel>/searchCriteria/productName}"
+                                       showValueHelp="true"
+                                       valueHelpRequest="onProductValueHelp"
+                                       placeholder="Search by Product"
+                                       width="100%"/>
+                            </form:content>
+                        </form:SimpleForm>
 
-                        <HBox class="sapUiMediumMarginTop">
+                        <HBox class="sapUiMediumMarginTop" 
+                              wrap="Wrap" 
+                              alignItems="Center"
+                              justifyContent="Start">
                             <Button id="filterButton" 
                                     text="Apply Filter" 
                                     type="Emphasized"
                                     press="onSearch"
                                     icon="sap-icon://filter"
-                                    class="sapUiSmallMarginEnd"/>
+                                    class="sapUiSmallMarginEnd sapUiSmallMarginBottom"/>
                             <Button id="resetButton" 
                                     text="Reset All" 
                                     press="onClearSearch"
-                                    icon="sap-icon://reset"/>
+                                    icon="sap-icon://reset"
+                                    class="sapUiSmallMarginBottom"/>
                         </HBox>
                     </VBox>
                 </content>
             </Panel>
 
+            <!-- Responsive Table with proper column widths -->
             <Table id="mainSalesTable" 
                    items="{
 						path: '/SalesOrderSet',
@@ -64,50 +74,91 @@
                         groupHeaderFactory: '.buildGroupHeader'  
 					}"
                    class="sapUiResponsiveMargin"
-                   mode="SingleSelect">
+                   mode="SingleSelect"
+                   fixedLayout="false"
+                   growing="true"
+                   growingThreshold="50">
 
                 <headerToolbar>
                     <Toolbar>
                         <Title text="Sales Order Overview" level="H2"/>
-                        <ToolbarSpacer/>
                         <Text id="totalRecordsText" text=""/>
                     </Toolbar>
                 </headerToolbar>
 
                 <columns>
-                    <Column>
+                    <Column width="12%" 
+                            minScreenWidth="Tablet" 
+                            demandPopin="true"
+                            popinDisplay="Inline">
                         <Text text="Order ID"/>
                     </Column>
-                    <Column>
-                        <Text text="Customer Information"/>
+                    <Column width="25%" 
+                            minScreenWidth="Phone" 
+                            demandPopin="false">
+                        <Text text="Customer"/>
                     </Column>
-                    <Column>
+                    <Column width="15%" 
+                            minScreenWidth="Tablet" 
+                            demandPopin="true"
+                            popinDisplay="Block"
+                            hAlign="End">
                         <Text text="Total Amount"/>
                     </Column>
-                    <Column>
+                    <Column width="13%" 
+                            minScreenWidth="Desktop" 
+                            demandPopin="true"
+                            popinDisplay="Block"
+                            hAlign="End">
                         <Text text="Net Value"/>
                     </Column>
-                    <Column>
+                    <Column width="13%" 
+                            minScreenWidth="Desktop" 
+                            demandPopin="true"
+                            popinDisplay="Block"
+                            hAlign="End">
                         <Text text="Tax Value"/>
                     </Column>
-                    <Column>
-                        <Text text="Invoice Status"/>
+                    <Column width="11%" 
+                            minScreenWidth="Tablet" 
+                            demandPopin="true"
+                            popinDisplay="Inline">
+                        <Text text="Invoice"/>
                     </Column>
-                    <Column>
-                        <Text text="Shipment Status"/>
+                    <Column width="11%" 
+                            minScreenWidth="Tablet" 
+                            demandPopin="true"
+                            popinDisplay="Inline">
+                        <Text text="Delivery"/>
                     </Column>
                 </columns>
 
                 <items>
                     <ColumnListItem press="onOrderItemSelected" type="Navigation">
                         <cells>
-                            <Text text="{SalesOrderID}"/>
-                            <Text text="{CustomerID} - {CustomerName}"/>
-                            <Text text="{GrossAmount} {CurrencyCode}"/>
-                            <Text text="{NetAmount} {CurrencyCode}"/>
-                            <Text text="{TaxAmount} {CurrencyCode}"/>
-                            <Text text="{BillingStatusDescription}"/>
-                            <Text text="{DeliveryStatusDescription}"/>
+                            <Text text="{SalesOrderID}" wrapping="false"/>
+                            <VBox>
+                                <Text text="{CustomerName}" 
+                                      wrapping="true" 
+                                      maxLines="2"/>
+                                <Text text="ID: {CustomerID}" 
+                                      class="sapUiTinyText"/>
+                            </VBox>
+                            <Text text="{parts: ['GrossAmount', 'CurrencyCode'], formatter: '.formatCurrency'}" 
+                                  wrapping="false"
+                                  textAlign="End"/>
+                            <Text text="{parts: ['NetAmount', 'CurrencyCode'], formatter: '.formatCurrency'}" 
+                                  wrapping="false"
+                                  textAlign="End"/>
+                            <Text text="{parts: ['TaxAmount', 'CurrencyCode'], formatter: '.formatCurrency'}" 
+                                  wrapping="false"
+                                  textAlign="End"/>
+                            <Text text="{BillingStatusDescription}" 
+                                  wrapping="true" 
+                                  maxLines="2"/>
+                            <Text text="{DeliveryStatusDescription}" 
+                                  wrapping="true" 
+                                  maxLines="2"/>
                         </cells>
                     </ColumnListItem>
                 </items>
@@ -125,6 +176,7 @@
         </footer>
     </Page>
     
+    <!-- Dialogs remain the same -->
     <SelectDialog id="orderSelectionDialog"
                   title="Choose Sales Order"
                   search="onOrderDialogFilter"

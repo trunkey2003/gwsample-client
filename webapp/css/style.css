@@ -1,1 +1,150 @@
-/* Enter your custom styles here */
+
+
+
+.sapMPage, .sapMPageWithHeader {
+    overflow-x: hidden;
+}
+
+
+.sapMTable {
+    width: 100%;
+    min-width: 0; 
+    overflow-x: auto; 
+}
+
+
+.sapMText {
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+
+.sapMColumnListItem .sapMText {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.sapUiForm .sapUiFormElement {
+    width: 100%;
+}
+
+
+.sapMToolbar {
+    flex-wrap: wrap;
+}
+
+
+.sapMPanel .sapMPanelContent {
+    overflow: visible;
+}
+
+
+.sapMInput, .sapMSelect {
+    min-width: 0;
+    max-width: 100%;
+}
+
+
+@media (max-width: 600px) {
+    
+    .sapUiResponsiveMargin {
+        margin: 0.5rem !important;
+    }
+    
+    .sapUiMediumMargin {
+        margin: 0.5rem !important;
+    }
+    
+    
+    .sapMBtn {
+        padding: 0.25rem 0.75rem;
+    }
+    
+    
+    .sapMHBox {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    
+    .sapMHBox .sapMBtn {
+        margin-bottom: 0.5rem;
+        width: 100%;
+    }
+}
+
+@media (max-width: 1024px) {
+    
+    .sapMTable {
+        font-size: 0.875rem;
+    }
+    
+    
+    .sapMColumnListItem .sapMListTblCell {
+        padding: 0.5rem 0.25rem;
+    }
+}
+
+
+.sapMITH {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+
+.sapMPanel {
+    min-width: 0;
+    overflow: hidden;
+}
+
+
+.sapMObjectHeader {
+    min-width: 0;
+    overflow: hidden;
+}
+
+.sapMObjectHeaderTitleDiv {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.sapMVBox, .sapMHBox {
+    min-width: 0;
+    flex-shrink: 1;
+}
+
+
+.sapMDialog {
+    max-width: 95vw;
+}
+
+
+#googleMap {
+    max-width: 100% !important;
+    height: 300px !important;
+}
+
+@media (min-width: 768px) {
+    #googleMap {
+        height: 400px !important;
+    }
+}
+
+
+.sapMText, .sapMLabel, .sapMTitle {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+
+.sapMToolbarSpacer {
+    min-width: 1rem;
+}
+
+
+.sapMGrowingList, .sapMGrowingTable {
+    overflow-x: auto;
+}

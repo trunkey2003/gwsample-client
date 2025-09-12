@@ -305,10 +305,8 @@ sap.ui.define([
 
         refreshRecordCount: function (customCount) {
             var recordText = this.byId("totalRecordsText");
-
+            var count = Number(0);
             if (recordText) {
-                var count = 0;
-                
                 if (customCount !== undefined) {
                     count = customCount;
                 } else {
