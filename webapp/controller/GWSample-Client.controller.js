@@ -304,23 +304,23 @@ sap.ui.define([
         },
 
         refreshRecordCount: function (customCount) {
-            var recordText = this.byId("totalRecordsText");
-            var count = Number(0);
-            if (recordText) {
-                if (customCount !== undefined) {
-                    count = customCount;
-                } else {
-                    var mainTable = this.byId("mainSalesTable");
-                    if (mainTable) {
-                        var tableBinding = mainTable.getBinding("items");
-                        if (tableBinding) {
-                            count = tableBinding.getLength() || 0;
-                        }
-                    }
-                }
+            // var recordText = this.byId("totalRecordsText");
+            // var count = Number(0);
+            // if (recordText) {
+            //     if (customCount !== undefined) {
+            //         count = customCount;
+            //     } else {
+            //         var mainTable = this.byId("mainSalesTable");
+            //         if (mainTable) {
+            //             var tableBinding = mainTable.getBinding("items");
+            //             if (tableBinding) {
+            //                 count = tableBinding.getLength() || 0;
+            //             }
+            //         }
+            //     }
 
-                recordText.setText("Total Records: " + count);
-            }
+            //     recordText.setText("Total Records: " + count);
+            // }
         },
 
         
