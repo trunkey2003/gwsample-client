@@ -11,7 +11,6 @@
                    class="sapUiResponsiveMargin">
                 <content>
                     <VBox class="sapUiMediumMargin">
-                        <!-- Make search form responsive -->
                         <form:SimpleForm layout="ResponsiveGridLayout"
                                        labelSpanXL="3" labelSpanL="3" labelSpanM="4" labelSpanS="12"
                                        adjustLabelSpan="false"
@@ -66,6 +65,44 @@
                 </content>
             </Panel>
 
+            <Panel id="groupingPanel" 
+                   headerText="Grouping Options" 
+                   expandable="true" 
+                   expanded="true"
+                   class="sapUiResponsiveMargin">
+                <content>
+                    <VBox class="sapUiMediumMargin">
+                        <Label text="Group Sales Orders By:" class="sapUiSmallMarginBottom"/>
+                        <HBox class="sapUiSmallMarginBottom" wrap="Wrap" alignItems="Center">
+                            <ToggleButton id="deliveryGroupToggle"
+                                        text="Delivery Status"
+                                        pressed="true"
+                                        press="onDeliveryGroupToggle"
+                                        icon="sap-icon://shipping-status"
+                                        class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <ToggleButton id="billingGroupToggle"
+                                        text="Billing Status"
+                                        pressed="false"
+                                        press="onBillingGroupToggle"
+                                        icon="sap-icon://sales-document"
+                                        class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button id="clearGroupingButton"
+                                   text="Clear Grouping"
+                                   press="onClearGrouping"
+                                   icon="sap-icon://clear-filter"
+                                   type="Transparent"
+                                   class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button id="groupStatsButton"
+                                   text="Show Statistics"
+                                   press="showGroupingStatistics"
+                                   icon="sap-icon://pie-chart"
+                                   type="Transparent"
+                                   class="sapUiTinyMarginBottom"/>
+                        </HBox>
+                    </VBox>
+                </content>
+            </Panel>
+
             <!-- Responsive Table with proper column widths -->
             <Table id="mainSalesTable" 
                    items="{
@@ -82,6 +119,7 @@
                 <headerToolbar>
                     <Toolbar>
                         <Title text="Sales Order Overview" level="H2"/>
+                        <ToolbarSpacer/>
                         <Text id="totalRecordsText" text=""/>
                     </Toolbar>
                 </headerToolbar>
@@ -175,8 +213,7 @@
             </Toolbar>
         </footer>
     </Page>
-    
-    <!-- Dialogs remain the same -->
+
     <SelectDialog id="orderSelectionDialog"
                   title="Choose Sales Order"
                   search="onOrderDialogFilter"
